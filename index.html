@@ -1,729 +1,99 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LifeStream v2.0 - Clean Working Version</title>
-    
-    <!-- Chart.js for visualizations -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.min.js"></script>
-    
-    <!-- Google Drive Storage -->
-    <script src="js/storage/drive-storage.js"></script>
-    
-    <!-- Google Auth Integration -->
-    <script src="js/auth/google-auth.js"></script>
-    
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary: #00d4ff;
-            --primary-dark: #00a8cc;
-            --secondary: #4ecdc4;
-            --accent: #ff6b6b;
-            --success: #00e676;
-            
-            --bg-primary: #0a0f1c;
-            --bg-secondary: #1a1f2e;
-            --bg-tertiary: #2a3441;
-            --surface: rgba(255, 255, 255, 0.05);
-            --surface-hover: rgba(255, 255, 255, 0.1);
-            
-            --text-primary: #ffffff;
-            --text-secondary: #b8c5d6;
-            --text-muted: #64748b;
-            
-            --border-radius: 16px;
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
-            color: var(--text-primary);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        /* LOGIN UI STYLES */
-        .login-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        .login-card {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
-        }
-
-        .login-header h1 {
-            margin: 0 0 10px 0;
-            color: #333;
-            font-size: 2.5em;
-        }
-
-        .login-header p {
-            color: #666;
-            margin: 0 0 30px 0;
-            line-height: 1.5;
-        }
-
-        .login-benefits {
-            margin: 30px 0;
-            text-align: left;
-        }
-
-        .benefit-item {
-            display: flex;
-            align-items: center;
-            margin: 15px 0;
-            color: #555;
-        }
-
-        .benefit-icon {
-            font-size: 1.2em;
-            margin-right: 12px;
-            width: 20px;
-        }
-
-        .google-signin-button {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            padding: 12px 24px;
-            background: #4285f4;
-            color: white;
-            border: none;
-            border-radius: 50px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin: 20px 0;
-        }
-
-        .google-signin-button:hover {
-            background: #3367d6;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(66, 133, 244, 0.3);
-        }
-
-        .google-logo {
-            width: 20px;
-            height: 20px;
-            margin-right: 12px;
-            background: white;
-            border-radius: 2px;
-            padding: 2px;
-        }
-
-        .privacy-note {
-            color: #666;
-            margin-top: 20px;
-            line-height: 1.4;
-        }
-
-        /* USER BAR STYLES */
-        .user-bar {
-            background: rgba(26, 31, 46, 0.95);
-            backdrop-filter: blur(20px);
-            padding: 12px 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .user-profile {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .user-profile-left {
-            display: flex;
-            align-items: center;
-        }
-
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            margin-right: 12px;
-        }
-
-        .user-name {
-            font-weight: 500;
-            color: var(--text-primary);
-            font-size: 0.9rem;
-        }
-
-        .storage-status {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            margin-top: 2px;
-        }
-
-        .sign-out-btn {
-            background: rgba(220, 53, 69, 0.2);
-            color: #ff6b6b;
-            border: 1px solid rgba(220, 53, 69, 0.3);
-            padding: 6px 12px;
-            border-radius: 16px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: var(--transition);
-        }
-
-        .sign-out-btn:hover {
-            background: rgba(220, 53, 69, 0.3);
-        }
-
-        /* MAIN APP STYLES */
-        .app {
-            display: grid;
-            grid-template-areas: 
-                "header header"
-                "sidebar main";
-            grid-template-columns: 280px 1fr;
-            grid-template-rows: 80px 1fr;
-            min-height: calc(100vh - 60px);
-        }
-
-        .header {
-            grid-area: header;
-            background: rgba(26, 31, 46, 0.95);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 2rem;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 700;
-            font-size: 1.5rem;
-            color: var(--primary);
-        }
-
-        .logo-icon {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-        }
-
-        .header-stats {
-            display: flex;
-            align-items: center;
-            gap: 2rem;
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
-            line-height: 1;
-        }
-
-        .stat-label {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-top: 2px;
-        }
-
-        .sidebar {
-            grid-area: sidebar;
-            background: var(--bg-secondary);
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 2rem 1.5rem;
-            overflow-y: auto;
-        }
-
-        .nav-section {
-            margin-bottom: 2rem;
-        }
-
-        .nav-section-title {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 1rem;
-            font-weight: 600;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: var(--transition);
-            margin-bottom: 4px;
-            color: var(--text-secondary);
-            text-decoration: none;
-        }
-
-        .nav-item:hover {
-            background: var(--surface);
-            color: var(--text-primary);
-        }
-
-        .nav-item.active {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-        }
-
-        .nav-icon {
-            font-size: 1.2rem;
-            width: 20px;
-            text-align: center;
-        }
-
-        .main {
-            grid-area: main;
-            padding: 2rem;
-            overflow-y: auto;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .card {
-            background: rgba(26, 31, 46, 0.8);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: var(--border-radius);
-            padding: 2rem;
-            margin-bottom: 2rem;
-            transition: var(--transition);
-        }
-
-        .card:hover {
-            transform: translateY(-2px);
-            border-color: rgba(0, 212, 255, 0.3);
-        }
-
-        .card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1.5rem;
-        }
-
-        .card-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-        }
-
-        .progress-rings {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
-
-        .progress-ring {
-            text-align: center;
-        }
-
-        .ring-container {
-            position: relative;
-            width: 120px;
-            height: 120px;
-            margin: 0 auto 1rem;
-        }
-
-        .ring-svg {
-            transform: rotate(-90deg);
-            width: 100%;
-            height: 100%;
-        }
-
-        .ring-bg {
-            fill: none;
-            stroke: rgba(255, 255, 255, 0.1);
-            stroke-width: 8;
-        }
-
-        .ring-progress {
-            fill: none;
-            stroke-width: 8;
-            stroke-linecap: round;
-            stroke-dasharray: 314;
-            stroke-dashoffset: 314;
-            transition: stroke-dashoffset 1s ease-in-out;
-        }
-
-        .ring-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-        }
-
-        .ring-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            line-height: 1;
-        }
-
-        .ring-label {
-            font-size: 0.7rem;
-            color: var(--text-secondary);
-            margin-top: 2px;
-        }
-
-        .progress-label {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .progress-sublabel {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-        }
-
-        .chart-container {
-            position: relative;
-            height: 300px;
-            margin-top: 1rem;
-        }
-
-        .chat-container {
-            height: 500px;
-            background: var(--surface);
-            border-radius: 12px;
-            padding: 1rem;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            margin-bottom: 1rem;
-            padding: 1rem;
-        }
-
-        .chat-message {
-            margin-bottom: 1rem;
-        }
-
-        .message-content {
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
-            padding: 12px;
-            border-radius: 12px;
-            max-width: 80%;
-        }
-
-        .user-message .message-content {
-            background: var(--primary);
-            margin-left: auto;
-            flex-direction: row-reverse;
-        }
-
-        .ai-message .message-content {
-            background: var(--surface);
-        }
-
-        .message-emoji {
-            font-size: 1.2rem;
-            flex-shrink: 0;
-        }
-
-        .chat-input-container {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .chat-input {
-            flex: 1;
-            padding: 12px;
-            background: var(--bg-tertiary);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 8px;
-            color: white;
-            font-size: 1rem;
-        }
-
-        .chat-input::placeholder {
-            color: var(--text-muted);
-        }
-
-        .send-button {
-            padding: 12px 24px;
-            background: var(--primary);
-            border: none;
-            border-radius: 8px;
-            color: white;
-            cursor: pointer;
-            font-weight: 600;
-            transition: var(--transition);
-        }
-
-        .send-button:hover {
-            background: var(--primary-dark);
-        }
-
-        .loading {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-            color: var(--text-secondary);
-        }
-
-        .spinner {
-            width: 24px;
-            height: 24px;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-top: 2px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-right: 12px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
+.nav-icon {
+                font-size: 1.2rem;
+                width: 20px;
+                text-align: center;
             }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
 
-        .animate-fadeInUp {
-            animation: fadeInUp 0.6s ease-out;
-        }
+            .logo {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                font-weight: 700;
+                font-size: 1.5rem;
+                color: var(--primary);
+            }
 
-        /* Mobile Responsive */
-        @media (max-width: 768px) {
-            .app {
-                grid-template-areas: 
-                    "header"
-                    "main";
-                grid-template-columns: 1fr;
-                grid-template-rows: 80px 1fr;
+            .logo-icon {
+                width: 40px;
+                height: 40px;
+                background: linear-gradient(135deg, var(--primary), var(--secondary));
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.2rem;
             }
-            
-            .sidebar {
-                display: none;
-            }
-            
-            .main {
-                padding: 1rem;
-            }
-            
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-            
+
             .header-stats {
-                display: none;
+                display: flex;
+                align-items: center;
+                gap: 2rem;
+            }
+
+            .stat-item {
+                text-align: center;
+            }
+
+            .stat-value {
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: var(--primary);
+                line-height: 1;
+            }
+
+            .stat-label {
+                font-size: 0.75rem;
+                color: var(--text-secondary);
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-top: 2px;
             }
         }
 
-        /* Status Messages */
-        .status-message {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 1rem;
-            border-radius: 8px;
-            z-index: 10000;
-            max-width: 300px;
-            font-weight: 500;
-            animation: fadeInUp 0.3s ease-out;
+        /* LARGE DESKTOP */
+        @media (min-width: 1440px) {
+            .main {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: var(--spacing-xl);
+            }
         }
 
-        .status-success {
-            background: rgba(0, 230, 118, 0.1);
-            border: 1px solid rgba(0, 230, 118, 0.3);
-            color: #00e676;
+        /* REDUCED MOTION */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
         }
 
-        .status-error {
-            background: rgba(255, 107, 107, 0.1);
-            border: 1px solid rgba(255, 107, 107, 0.3);
-            color: #ff6b6b;
-        }
-
-        /* Goal Cards */
-        .goals-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
-
-        .goal-card {
-            background: var(--surface);
-            border-radius: var(--border-radius);
-            padding: 1.5rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: var(--transition);
-        }
-
-        .goal-card:hover {
-            border-color: var(--primary);
-            transform: translateY(-2px);
-        }
-
-        .goal-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .goal-emoji {
-            font-size: 1.5rem;
-            margin-right: 12px;
-        }
-
-        .goal-title {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            flex: 1;
-        }
-
-        .goal-progress {
-            margin: 1rem 0;
-        }
-
-        .goal-progress-text {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
-        }
-
-        .goal-progress-bar {
-            height: 6px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
-            overflow: hidden;
-        }
-
-        .goal-progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            border-radius: 3px;
-            transition: width 0.5s ease;
-        }
-
-        .goal-streak {
-            font-size: 0.75rem;
-            color: var(--primary);
-            font-weight: 600;
-        }
-
-        .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: var(--transition);
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-dark);
-        }
-
-        .btn-secondary {
-            background: var(--surface);
-            color: var(--text-primary);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .btn-secondary:hover {
-            background: var(--surface-hover);
-        }
-
-        .temp-message {
-            background: rgba(0, 230, 118, 0.1);
-            border: 1px solid rgba(0, 230, 118, 0.3);
-            border-radius: 10px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-
-        .temp-message p {
-            margin: 10px 0;
-            color: #00e676;
+        /* HIGH CONTRAST */
+        @media (prefers-contrast: high) {
+            :root {
+                --surface: rgba(255, 255, 255, 0.15);
+                --surface-hover: rgba(255, 255, 255, 0.25);
+            }
         }
     </style>
 </head>
 <body>
+    <!-- PWA Loading Screen -->
+    <div class="pwa-loading" id="pwa-loading">
+        <div class="loading-logo">🌊</div>
+        <div class="loading-text">LifeStream</div>
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- PWA Install Prompt -->
+    <div class="install-prompt" id="install-prompt">
+        <div class="install-prompt-text">
+            📱 Install LifeStream as an app for the best experience!
+        </div>
+        <button class="install-prompt-btn" id="install-btn">Install</button>
+        <button class="install-prompt-close" id="install-close">×</button>
+    </div>
+
     <!-- Login Section (shows when not authenticated) -->
     <div id="login-section" class="login-container">
         <div class="login-card">
@@ -746,8 +116,8 @@
                     <span>Access from anywhere</span>
                 </div>
                 <div class="benefit-item">
-                    <span class="benefit-icon">🚀</span>
-                    <span>No setup required</span>
+                    <span class="benefit-icon">📱</span>
+                    <span>Install as native app</span>
                 </div>
             </div>
 
@@ -776,68 +146,63 @@
             </div>
         </div>
 
+        <!-- Desktop Header (hidden on mobile) -->
+        <header class="desktop-header">
+            <div class="logo">
+                <div class="logo-icon">📊</div>
+                <span>LifeStream v2.0</span>
+            </div>
+            
+            <div class="header-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="currentStreak">0</div>
+                    <div class="stat-label">Day Streak</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalPoints">0</div>
+                    <div class="stat-label">Points</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="completedGoals">0</div>
+                    <div class="stat-label">Goals Today</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Desktop Sidebar (hidden on mobile) -->
+        <aside class="desktop-sidebar">
+            <nav>
+                <div class="nav-section">
+                    <div class="nav-section-title">Main</div>
+                    <div class="nav-item active" data-tab="dashboard">
+                        <span class="nav-icon">🏠</span>
+                        <span>Dashboard</span>
+                    </div>
+                    <div class="nav-item" data-tab="chat">
+                        <span class="nav-icon">💬</span>
+                        <span>Chat & Log</span>
+                    </div>
+                    <div class="nav-item" data-tab="goals">
+                        <span class="nav-icon">🎯</span>
+                        <span>Goals</span>
+                    </div>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">Analytics</div>
+                    <div class="nav-item" data-tab="analytics">
+                        <span class="nav-icon">📈</span>
+                        <span>Analytics</span>
+                    </div>
+                    <div class="nav-item" data-tab="insights">
+                        <span class="nav-icon">💡</span>
+                        <span>Insights</span>
+                    </div>
+                </div>
+            </nav>
+        </aside>
+
         <div class="app">
-            <!-- Header -->
-            <header class="header">
-                <div class="logo">
-                    <div class="logo-icon">📊</div>
-                    <span>LifeStream v2.0</span>
-                </div>
-                
-                <div class="header-stats">
-                    <div class="stat-item">
-                        <div class="stat-value" id="currentStreak">0</div>
-                        <div class="stat-label">Day Streak</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="totalPoints">0</div>
-                        <div class="stat-label">Points</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="completedGoals">0</div>
-                        <div class="stat-label">Goals Today</div>
-                    </div>
-                </div>
-                
-                <div style="text-align: right;">
-                    <div style="font-size: 0.9rem; font-weight: 600;">Life Explorer</div>
-                    <div style="font-size: 0.75rem; color: var(--text-secondary);" id="userLevel">Explorer</div>
-                </div>
-            </header>
-
-            <!-- Sidebar -->
-            <aside class="sidebar">
-                <nav>
-                    <div class="nav-section">
-                        <div class="nav-section-title">Main</div>
-                        <div class="nav-item active" data-tab="dashboard">
-                            <span class="nav-icon">🏠</span>
-                            <span>Dashboard</span>
-                        </div>
-                        <div class="nav-item" data-tab="chat">
-                            <span class="nav-icon">💬</span>
-                            <span>Chat & Log</span>
-                        </div>
-                        <div class="nav-item" data-tab="goals">
-                            <span class="nav-icon">🎯</span>
-                            <span>Goals</span>
-                        </div>
-                    </div>
-                    
-                    <div class="nav-section">
-                        <div class="nav-section-title">Analytics</div>
-                        <div class="nav-item" data-tab="analytics">
-                            <span class="nav-icon">📈</span>
-                            <span>Analytics</span>
-                        </div>
-                        <div class="nav-item" data-tab="insights">
-                            <span class="nav-icon">💡</span>
-                            <span>Insights</span>
-                        </div>
-                    </div>
-                </nav>
-            </aside>
-
             <!-- Main Content -->
             <main class="main">
                 <!-- Dashboard Tab -->
@@ -847,8 +212,8 @@
                         <div class="progress-ring">
                             <div class="ring-container">
                                 <svg class="ring-svg">
-                                    <circle class="ring-bg" cx="60" cy="60" r="50"></circle>
-                                    <circle class="ring-progress" cx="60" cy="60" r="50" 
+                                    <circle class="ring-bg" cx="50" cy="50" r="40"></circle>
+                                    <circle class="ring-progress" cx="50" cy="50" r="40" 
                                             stroke="#00d4ff" id="goalProgressRing"></circle>
                                 </svg>
                                 <div class="ring-text">
@@ -857,14 +222,14 @@
                                 </div>
                             </div>
                             <div class="progress-label">Daily Goals</div>
-                            <div class="progress-sublabel">Track your progress</div>
+                            <div class="progress-sublabel">Track progress</div>
                         </div>
                         
                         <div class="progress-ring">
                             <div class="ring-container">
                                 <svg class="ring-svg">
-                                    <circle class="ring-bg" cx="60" cy="60" r="50"></circle>
-                                    <circle class="ring-progress" cx="60" cy="60" r="50" 
+                                    <circle class="ring-bg" cx="50" cy="50" r="40"></circle>
+                                    <circle class="ring-progress" cx="50" cy="50" r="40" 
                                             stroke="#4ecdc4" id="activityProgressRing"></circle>
                                 </svg>
                                 <div class="ring-text">
@@ -879,8 +244,8 @@
                         <div class="progress-ring">
                             <div class="ring-container">
                                 <svg class="ring-svg">
-                                    <circle class="ring-bg" cx="60" cy="60" r="50"></circle>
-                                    <circle class="ring-progress" cx="60" cy="60" r="50" 
+                                    <circle class="ring-bg" cx="50" cy="50" r="40"></circle>
+                                    <circle class="ring-progress" cx="50" cy="50" r="40" 
                                             stroke="#ff6b6b" id="achievementProgressRing"></circle>
                                 </svg>
                                 <div class="ring-text">
@@ -895,7 +260,7 @@
 
                     <!-- Dashboard Cards -->
                     <div class="dashboard-grid">
-                        <div class="card animate-fadeInUp">
+                        <div class="card">
                             <div class="card-header">
                                 <h3 class="card-title">
                                     <span>📈</span>
@@ -907,7 +272,7 @@
                             </div>
                         </div>
                         
-                        <div class="card animate-fadeInUp" style="animation-delay: 0.1s">
+                        <div class="card">
                             <div class="card-header">
                                 <h3 class="card-title">
                                     <span>🎯</span>
@@ -916,12 +281,13 @@
                             </div>
                             <div>
                                 <div class="temp-message">
-                                    <p>✅ Google Drive connected successfully!</p>
+                                    <p>✅ Google Drive connected!</p>
                                     <p>🤖 AI integration ready!</p>
-                                    <p>🚀 Your data is safely stored in YOUR Google Drive!</p>
+                                    <p>📱 Mobile PWA ready!</p>
+                                    <p>🚀 Your data is safely stored!</p>
                                 </div>
-                                <p style="color: var(--text-secondary); margin-bottom: 1rem;">
-                                    Start logging your activities in the Chat tab to see beautiful analytics here!
+                                <p style="color: var(--text-secondary); margin-bottom: var(--spacing-md);">
+                                    Start logging activities to see beautiful analytics!
                                 </p>
                                 <button class="btn btn-primary" onclick="switchToChat()">
                                     Start Tracking 🚀
@@ -946,14 +312,14 @@
                                 <div class="chat-message ai-message">
                                     <div class="message-content">
                                         <span class="message-emoji">🤖</span>
-                                        <span>Welcome to LifeStream! I'm here to help you track your amazing journey. Your data is safely stored in your personal Google Drive. What would you like to log today? Try saying something like "I worked out for 30 minutes" or "I read for 45 minutes"!</span>
+                                        <span>Welcome to LifeStream! I'm here to help track your amazing journey. Your data is safely stored in your Google Drive. What would you like to log today?</span>
                                     </div>
                                 </div>
                             </div>
                             
                             <div class="chat-input-container">
-                                <input type="text" id="chatInput" class="chat-input" placeholder="Tell me about your day..." />
-                                <button class="send-button" onclick="sendMessage()">Send</button>
+                                <textarea id="chatInput" class="chat-input" placeholder="Tell me about your day..." rows="1"></textarea>
+                                <button class="send-button" onclick="sendMessage()" aria-label="Send message">📤</button>
                             </div>
                         </div>
                     </div>
@@ -982,13 +348,13 @@
                         <div class="card-header">
                             <h3 class="card-title">
                                 <span>📊</span>
-                                Analytics Dashboard
+                                Analytics
                             </h3>
                         </div>
                         
                         <div>
-                            <p style="color: var(--text-secondary); margin-bottom: 2rem;">
-                                Start logging activities to see detailed analytics and insights about your progress!
+                            <p style="color: var(--text-secondary); margin-bottom: var(--spacing-lg);">
+                                Start logging activities to see detailed analytics!
                             </p>
                             
                             <div class="chart-container">
@@ -1004,30 +370,143 @@
                         <div class="card-header">
                             <h3 class="card-title">
                                 <span>💡</span>
-                                Personalized Insights
+                                Insights
                             </h3>
                         </div>
                         
                         <div id="insightsContent">
                             <p style="color: var(--text-secondary);">
-                                As you log more activities, I'll generate personalized insights about your patterns and progress!
+                                As you log activities, I'll generate personalized insights!
                             </p>
                         </div>
                     </div>
                 </div>
             </main>
+
+            <!-- Mobile Navigation -->
+            <nav class="mobile-nav">
+                <a class="mobile-nav-item active" data-tab="dashboard">
+                    <div class="mobile-nav-icon">🏠</div>
+                    <div class="mobile-nav-label">Home</div>
+                </a>
+                <a class="mobile-nav-item" data-tab="chat">
+                    <div class="mobile-nav-icon">💬</div>
+                    <div class="mobile-nav-label">Chat</div>
+                </a>
+                <a class="mobile-nav-item" data-tab="goals">
+                    <div class="mobile-nav-icon">🎯</div>
+                    <div class="mobile-nav-label">Goals</div>
+                </a>
+                <a class="mobile-nav-item" data-tab="analytics">
+                    <div class="mobile-nav-icon">📈</div>
+                    <div class="mobile-nav-label">Stats</div>
+                </a>
+                <a class="mobile-nav-item" data-tab="insights">
+                    <div class="mobile-nav-icon">💡</div>
+                    <div class="mobile-nav-label">Insights</div>
+                </a>
+            </nav>
         </div>
     </div>
 
     <script>
-        // Global error handler
-        window.addEventListener('error', function(e) {
-            console.warn('Error caught and handled:', e.message);
-            showStatusMessage('Minor issue detected, but LifeStream is still working! 🛠️', 'error');
-            return true;
+        // PWA Loading and Install Logic
+        let deferredPrompt;
+        let isAppInstalled = false;
+
+        // Hide loading screen when app is ready
+        function hideLoadingScreen() {
+            const loadingScreen = document.getElementById('pwa-loading');
+            loadingScreen.classList.add('hidden');
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+            }, 500);
+        }
+
+        // PWA Install Prompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            if (!isAppInstalled) {
+                setTimeout(() => {
+                    showInstallPrompt();
+                }, 3000);
+            }
         });
 
-        // LifeStream App Class with Drive Storage Integration
+        function showInstallPrompt() {
+            const installPrompt = document.getElementById('install-prompt');
+            if (installPrompt && deferredPrompt) {
+                installPrompt.classList.add('show');
+            }
+        }
+
+        function hideInstallPrompt() {
+            const installPrompt = document.getElementById('install-prompt');
+            installPrompt.classList.remove('show');
+        }
+
+        // Install button click
+        document.getElementById('install-btn')?.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                
+                if (outcome === 'accepted') {
+                    console.log('✅ PWA installed successfully');
+                    isAppInstalled = true;
+                    showStatusMessage('🎉 LifeStream installed successfully!', 'success');
+                } else {
+                    console.log('❌ PWA installation declined');
+                }
+                
+                deferredPrompt = null;
+                hideInstallPrompt();
+            }
+        });
+
+        // Close install prompt
+        document.getElementById('install-close')?.addEventListener('click', () => {
+            hideInstallPrompt();
+        });
+
+        // Detect if app is running as PWA
+        window.addEventListener('appinstalled', () => {
+            isAppInstalled = true;
+            hideInstallPrompt();
+            showStatusMessage('🎉 LifeStream is now installed!', 'success');
+        });
+
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', async () => {
+                try {
+                    const registration = await navigator.serviceWorker.register('/lifestream-app/sw.js');
+                    console.log('✅ Service Worker registered successfully:', registration.scope);
+                    
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                showStatusMessage('🔄 App updated! Refresh to see changes.', 'success');
+                            }
+                        });
+                    });
+                    
+                } catch (error) {
+                    console.error('❌ Service Worker registration failed:', error);
+                }
+            });
+        }
+
+        // Auto-resize textarea
+        function autoResizeTextarea(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+        }
+
+        // Mobile-optimized LifeStream App Class
         class LifeStreamApp {
             constructor() {
                 this.currentTab = 'dashboard';
@@ -1041,102 +520,101 @@
                 };
                 this.charts = {};
                 this.driveConnected = false;
+                this.isMobile = window.innerWidth < 768;
                 
                 this.init();
             }
 
             async init() {
                 try {
-                    console.log('🚀 Initializing LifeStream with Drive storage...');
+                    console.log('🚀 Initializing mobile-first LifeStream...');
                     
-                    this.setupNavigation();
+                    this.setupMobileNavigation();
+                    this.setupDesktopNavigation();
                     this.setupChat();
                     this.setupCharts();
+                    this.setupMobileOptimizations();
                     
-                    // Load data from Drive (fallback to localStorage)
                     await this.loadAllData();
                     this.loadDefaultGoals();
                     
                     console.log('✅ LifeStream initialized successfully');
-                    showStatusMessage('LifeStream v2.0 with Drive storage is ready! 🚀', 'success');
+                    showStatusMessage('🚀 LifeStream ready!', 'success');
+                    
+                    setTimeout(hideLoadingScreen, 1000);
                     
                 } catch (error) {
                     console.warn('Initialization error:', error);
-                    showStatusMessage('LifeStream loaded in safe mode 🛡️', 'error');
+                    showStatusMessage('⚠️ Started in safe mode', 'error');
+                    setTimeout(hideLoadingScreen, 1000);
                 }
             }
 
-            // Load all data from Drive or localStorage
-            async loadAllData() {
-                try {
-                    if (typeof driveStorage !== 'undefined' && driveStorage.isInitialized) {
-                        console.log('📁 Loading data from Google Drive...');
+            setupMobileOptimizations() {
+                if (this.isMobile) {
+                    const inputs = document.querySelectorAll('input, textarea');
+                    inputs.forEach(input => {
+                        input.addEventListener('focus', () => {
+                            document.querySelector('meta[name=viewport]').setAttribute(
+                                'content', 
+                                'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'
+                            );
+                        });
                         
-                        // Load from Drive
-                        const [activities, stats, goals] = await Promise.all([
-                            driveStorage.loadActivities(),
-                            driveStorage.loadStats(),
-                            driveStorage.loadGoals()
-                        ]);
-                        
-                        this.activities = activities || [];
-                        this.stats = stats || this.stats;
-                        // Don't overwrite goals if Drive has empty array, we'll use defaults
-                        
-                        this.driveConnected = true;
-                        console.log('✅ Data loaded from Drive');
-                        
-                        // Update storage status
-                        this.updateStorageStatus('📁 Synced with Google Drive');
-                        
-                    } else {
-                        console.log('💾 Loading data from localStorage...');
-                        this.loadInitialDataFromLocal();
-                        this.updateStorageStatus('💾 Using local storage');
-                    }
-                    
-                    this.updateStatsDisplay();
-                    this.updateProgressRings();
-                    
-                } catch (error) {
-                    console.warn('Data loading error:', error);
-                    this.loadInitialDataFromLocal();
-                    this.updateStorageStatus('⚠️ Storage unavailable');
+                        input.addEventListener('blur', () => {
+                            document.querySelector('meta[name=viewport]').setAttribute(
+                                'content', 
+                                'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes'
+                            );
+                        });
+                    });
+
+                    document.addEventListener('touchstart', (e) => {
+                        if (e.target.matches('button, .btn, .nav-item, .mobile-nav-item')) {
+                            e.target.style.transform = 'scale(0.98)';
+                        }
+                    });
+
+                    document.addEventListener('touchend', (e) => {
+                        if (e.target.matches('button, .btn, .nav-item, .mobile-nav-item')) {
+                            setTimeout(() => {
+                                e.target.style.transform = '';
+                            }, 150);
+                        }
+                    });
+                }
+
+                window.addEventListener('orientationchange', () => {
+                    setTimeout(() => {
+                        this.handleOrientationChange();
+                    }, 100);
+                });
+            }
+
+            handleOrientationChange() {
+                if (this.charts.activityTrend) {
+                    this.charts.activityTrend.resize();
+                }
+                if (this.charts.weekly) {
+                    this.charts.weekly.resize();
                 }
             }
 
-            // Save all data to Drive or localStorage
-            async saveAllData() {
-                try {
-                    if (this.driveConnected && typeof driveStorage !== 'undefined' && driveStorage.isInitialized) {
-                        // Save to Drive
-                        await Promise.all([
-                            driveStorage.saveActivities(this.activities),
-                            driveStorage.saveStats(this.stats),
-                            driveStorage.saveGoals(this.goals)
-                        ]);
-                        console.log('✅ Data saved to Google Drive');
-                    } else {
-                        // Fallback to localStorage
-                        this.saveToLocalStorage();
-                        console.log('💾 Data saved to localStorage');
-                    }
-                } catch (error) {
-                    console.warn('Save error:', error);
-                    this.saveToLocalStorage();
-                }
+            setupMobileNavigation() {
+                const mobileNavItems = document.querySelectorAll('.mobile-nav-item');
+                mobileNavItems.forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.switchTab(item.dataset.tab);
+                        
+                        mobileNavItems.forEach(nav => nav.classList.remove('active'));
+                        item.classList.add('active');
+                    });
+                });
             }
 
-            // Update storage status in UI
-            updateStorageStatus(status) {
-                const storageStatusEl = document.querySelector('.storage-status');
-                if (storageStatusEl) {
-                    storageStatusEl.textContent = status;
-                }
-            }
-
-            setupNavigation() {
-                const navItems = document.querySelectorAll('[data-tab]');
+            setupDesktopNavigation() {
+                const navItems = document.querySelectorAll('.desktop-sidebar .nav-item');
                 navItems.forEach(item => {
                     item.addEventListener('click', (e) => {
                         e.preventDefault();
@@ -1147,22 +625,23 @@
 
             switchTab(tabName) {
                 try {
-                    // Update navigation
-                    document.querySelectorAll('.nav-item').forEach(item => {
+                    document.querySelectorAll('.desktop-sidebar .nav-item').forEach(item => {
                         item.classList.remove('active');
                     });
-                    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+                    const desktopNav = document.querySelector(`.desktop-sidebar [data-tab="${tabName}"]`);
+                    if (desktopNav) desktopNav.classList.add('active');
 
-                    // Update content
                     document.querySelectorAll('.tab-content').forEach(content => {
                         content.classList.remove('active');
                     });
                     document.getElementById(`${tabName}Tab`).classList.add('active');
 
                     this.currentTab = tabName;
-                    
-                    // Load tab-specific content
                     this.loadTabContent(tabName);
+                    
+                    if (this.isMobile) {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
                     
                 } catch (error) {
                     console.warn('Tab switching error:', error);
@@ -1183,11 +662,76 @@
                 }
             }
 
+            async loadAllData() {
+                try {
+                    if (typeof driveStorage !== 'undefined' && driveStorage.isInitialized) {
+                        console.log('📁 Loading data from Google Drive...');
+                        
+                        const [activities, stats, goals] = await Promise.all([
+                            driveStorage.loadActivities(),
+                            driveStorage.loadStats(),
+                            driveStorage.loadGoals()
+                        ]);
+                        
+                        this.activities = activities || [];
+                        this.stats = stats || this.stats;
+                        
+                        this.driveConnected = true;
+                        console.log('✅ Data loaded from Drive');
+                        this.updateStorageStatus('📁 Synced with Google Drive');
+                        
+                    } else {
+                        console.log('💾 Loading data from localStorage...');
+                        this.loadInitialDataFromLocal();
+                        this.updateStorageStatus('💾 Using local storage');
+                    }
+                    
+                    this.updateStatsDisplay();
+                    this.updateProgressRings();
+                    
+                } catch (error) {
+                    console.warn('Data loading error:', error);
+                    this.loadInitialDataFromLocal();
+                    this.updateStorageStatus('⚠️ Storage unavailable');
+                }
+            }
+
+            async saveAllData() {
+                try {
+                    if (this.driveConnected && typeof driveStorage !== 'undefined' && driveStorage.isInitialized) {
+                        await Promise.all([
+                            driveStorage.saveActivities(this.activities),
+                            driveStorage.saveStats(this.stats),
+                            driveStorage.saveGoals(this.goals)
+                        ]);
+                        console.log('✅ Data saved to Google Drive');
+                    } else {
+                        this.saveToLocalStorage();
+                        console.log('💾 Data saved to localStorage');
+                    }
+                } catch (error) {
+                    console.warn('Save error:', error);
+                    this.saveToLocalStorage();
+                }
+            }
+
+            updateStorageStatus(status) {
+                const storageStatusEl = document.querySelector('.storage-status');
+                if (storageStatusEl) {
+                    storageStatusEl.textContent = status;
+                }
+            }
+
             setupChat() {
                 const chatInput = document.getElementById('chatInput');
                 if (chatInput) {
+                    chatInput.addEventListener('input', () => {
+                        autoResizeTextarea(chatInput);
+                    });
+                    
                     chatInput.addEventListener('keypress', (e) => {
-                        if (e.key === 'Enter') {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
                             this.sendMessage();
                         }
                     });
@@ -1200,12 +744,15 @@
                     const message = input.value.trim();
                     if (!message) return;
 
-                    // Add user message
                     this.addChatMessage(message, 'user');
                     input.value = '';
+                    input.style.height = 'auto';
 
-                    // Process message and generate response
+                    this.showTypingIndicator();
+
                     setTimeout(async () => {
+                        this.hideTypingIndicator();
+                        
                         const activity = this.parseActivity(message);
                         if (activity) {
                             this.logActivity(activity);
@@ -1217,14 +764,65 @@
                         this.updateStats();
                         this.updateProgressRings();
                         
-                        // Save to Drive
                         await this.saveAllData();
                         
-                    }, 1000);
+                        if (this.isMobile && navigator.vibrate) {
+                            navigator.vibrate(50);
+                        }
+                        
+                    }, 1000 + Math.random() * 1000);
                     
                 } catch (error) {
                     console.warn('Send message error:', error);
+                    this.hideTypingIndicator();
                     this.addChatMessage('Sorry, something went wrong! But I\'m still here to help! 🤖', 'ai');
+                }
+            }
+
+            showTypingIndicator() {
+                const container = document.getElementById('chatMessages');
+                const typingDiv = document.createElement('div');
+                typingDiv.className = 'chat-message ai-message typing-indicator';
+                typingDiv.innerHTML = `
+                    <div class="message-content">
+                        <span class="message-emoji">🤖</span>
+                        <span>
+                            <span class="typing-dots">
+                                <span>.</span><span>.</span><span>.</span>
+                            </span>
+                        </span>
+                    </div>
+                `;
+                
+                if (!document.querySelector('#typing-css')) {
+                    const style = document.createElement('style');
+                    style.id = 'typing-css';
+                    style.textContent = `
+                        .typing-dots span {
+                            animation: typing 1.4s infinite;
+                        }
+                        .typing-dots span:nth-child(2) {
+                            animation-delay: 0.2s;
+                        }
+                        .typing-dots span:nth-child(3) {
+                            animation-delay: 0.4s;
+                        }
+                        @keyframes typing {
+                            0%, 60%, 100% { opacity: 0.3; }
+                            30% { opacity: 1; }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+                
+                container.appendChild(typingDiv);
+                container.scrollTop = container.scrollHeight;
+            }
+
+            hideTypingIndicator() {
+                const typingIndicator = document.querySelector('.typing-indicator');
+                if (typingIndicator) {
+                    typingIndicator.remove();
                 }
             }
 
@@ -1235,20 +833,6 @@
                 if (msg.includes('workout') || msg.includes('exercise') || msg.includes('gym')) {
                     activity = {
                         type: 'workout',
-                        category: 'fitness',
-                        duration: this.extractDuration(msg) || 30,
-                        timestamp: Date.now()
-                    };
-                } else if (msg.includes('read') || msg.includes('book') || msg.includes('study')) {
-                    activity = {
-                        type: 'reading',
-                        category: 'learning',
-                        duration: this.extractDuration(msg) || 30,
-                        timestamp: Date.now()
-                    };
-                } else if (msg.includes('meditat') || msg.includes('yoga') || msg.includes('mindful')) {
-                    activity = {
-                        type: 'meditation',
                         category: 'wellness',
                         duration: this.extractDuration(msg) || 15,
                         timestamp: Date.now()
@@ -1284,24 +868,24 @@
                 if (activity) {
                     const responses = {
                         fitness: [
-                            "Amazing workout! 💪 Your consistency is building real strength! Data saved to your Drive!",
-                            "That's what I call dedication! 🔥 Your fitness journey is inspiring! Synced to Drive!",
-                            "Another step closer to your goals! 🏃‍♂️ Keep that momentum going! Saved securely!"
+                            "Amazing workout! 💪 Your consistency is building real strength! Synced to Drive! 📁",
+                            "That's dedication! 🔥 Your fitness journey is inspiring! Data saved securely! ✅",
+                            "Closer to your goals! 🏃‍♂️ Keep that momentum! Stored safely in your Drive! 🌟"
                         ],
                         learning: [
-                            "Knowledge is power! 📚 Your commitment to learning is fantastic! Stored in your Drive!",
-                            "Every page makes you smarter! 🧠 Love seeing your growth mindset! Data synced!",
-                            "Reading builds the mind! 📖 You're investing in your best self! Saved to Drive!"
+                            "Knowledge is power! 📚 Your learning commitment is fantastic! Saved to Drive! 💾",
+                            "Every page makes you smarter! 🧠 Growth mindset in action! Data synced! ⚡",
+                            "Reading builds the mind! 📖 Investing in your best self! Stored securely! 🎯"
                         ],
                         wellness: [
-                            "Inner peace creates outer success! 🧘‍♂️ Your mindfulness practice is powerful! Synced!",
-                            "Mental wellness is the foundation! ✨ You're taking care of what matters most! Saved!",
-                            "Mindful moments lead to meaningful days! 🌸 Beautiful self-care! Stored securely!"
+                            "Inner peace creates success! 🧘‍♂️ Powerful mindfulness practice! Synced! ✨",
+                            "Mental wellness is foundation! 🌸 Taking care of what matters! Saved! 💚",
+                            "Mindful moments = meaningful days! 🧠 Beautiful self-care! Stored safely! 🙏"
                         ],
                         productivity: [
-                            "Productivity champion! 💼 You're making things happen! Data saved to Drive!",
-                            "Great progress on your work goals! ⚡ Keep that momentum! Synced securely!",
-                            "Getting things done! 🎯 Your efficiency is impressive! Saved to your Drive!"
+                            "Productivity champion! 💼 Making things happen! Data saved to Drive! 🚀",
+                            "Great work progress! ⚡ Keep that momentum! Synced securely! 💪",
+                            "Getting things done! 🎯 Impressive efficiency! Saved to your Drive! 📈"
                         ]
                     };
                     
@@ -1309,7 +893,7 @@
                     return categoryResponses[Math.floor(Math.random() * categoryResponses.length)];
                 }
                 
-                return "Thanks for sharing! 🌟 I love hearing about your progress! Every moment you track builds a better picture of your amazing journey! 📁 Safely stored in your Google Drive!";
+                return "Thanks for sharing! 🌟 I love hearing about your progress! Every moment you track builds a better picture of your amazing journey! 📱💙";
             }
 
             addChatMessage(message, sender) {
@@ -1327,7 +911,14 @@
                     `;
                     
                     container.appendChild(messageDiv);
-                    container.scrollTop = container.scrollHeight;
+                    
+                    setTimeout(() => {
+                        container.scrollTo({
+                            top: container.scrollHeight,
+                            behavior: 'smooth'
+                        });
+                    }, 100);
+                    
                 } catch (error) {
                     console.warn('Add chat message error:', error);
                 }
@@ -1337,18 +928,22 @@
                 this.stats.streak = Math.min(this.stats.streak + 1, 100);
                 this.stats.points += 25;
                 
-                // Check goal completion
                 this.checkGoalProgress();
-                
-                // Update UI
                 this.updateStatsDisplay();
             }
 
             updateStatsDisplay() {
                 try {
-                    document.getElementById('currentStreak').textContent = this.stats.streak;
-                    document.getElementById('totalPoints').textContent = this.stats.points.toLocaleString();
-                    document.getElementById('completedGoals').textContent = this.stats.completedGoals;
+                    const elements = {
+                        currentStreak: document.getElementById('currentStreak'),
+                        totalPoints: document.getElementById('totalPoints'),
+                        completedGoals: document.getElementById('completedGoals')
+                    };
+                    
+                    if (elements.currentStreak) elements.currentStreak.textContent = this.stats.streak;
+                    if (elements.totalPoints) elements.totalPoints.textContent = this.stats.points.toLocaleString();
+                    if (elements.completedGoals) elements.completedGoals.textContent = this.stats.completedGoals;
+                    
                 } catch (error) {
                     console.warn('Stats display error:', error);
                 }
@@ -1360,24 +955,30 @@
                     const activityPercent = Math.min((this.stats.totalActivities / 20) * 100, 100);
                     const achievementPercent = Math.min((this.stats.points / 1000) * 100, 100);
                     
-                    this.animateProgressRing('goalProgressRing', goalPercent);
-                    this.animateProgressRing('activityProgressRing', activityPercent);
-                    this.animateProgressRing('achievementProgressRing', achievementPercent);
+                    this.animateProgressRing('goalProgressRing', goalPercent, 251);
+                    this.animateProgressRing('activityProgressRing', activityPercent, 251);
+                    this.animateProgressRing('achievementProgressRing', achievementPercent, 251);
                     
-                    document.getElementById('goalProgress').textContent = Math.round(goalPercent) + '%';
-                    document.getElementById('activityProgress').textContent = this.stats.totalActivities;
-                    document.getElementById('achievementProgress').textContent = Math.floor(this.stats.points / 100);
+                    const elements = {
+                        goalProgress: document.getElementById('goalProgress'),
+                        activityProgress: document.getElementById('activityProgress'),
+                        achievementProgress: document.getElementById('achievementProgress')
+                    };
+                    
+                    if (elements.goalProgress) elements.goalProgress.textContent = Math.round(goalPercent) + '%';
+                    if (elements.activityProgress) elements.activityProgress.textContent = this.stats.totalActivities;
+                    if (elements.achievementProgress) elements.achievementProgress.textContent = Math.floor(this.stats.points / 100);
+                    
                 } catch (error) {
                     console.warn('Progress rings error:', error);
                 }
             }
 
-            animateProgressRing(ringId, percent) {
+            animateProgressRing(ringId, percent, circumference) {
                 try {
                     const ring = document.getElementById(ringId);
                     if (!ring) return;
 
-                    const circumference = 2 * Math.PI * 50;
                     const offset = circumference - (percent / 100) * circumference;
                     ring.style.strokeDashoffset = offset;
                 } catch (error) {
@@ -1392,7 +993,10 @@
                         return;
                     }
 
-                    // Activity Trend Chart
+                    Chart.defaults.font.size = this.isMobile ? 12 : 14;
+                    Chart.defaults.elements.point.radius = this.isMobile ? 3 : 4;
+                    Chart.defaults.elements.line.borderWidth = this.isMobile ? 2 : 3;
+
                     const trendCtx = document.getElementById('activityTrendChart');
                     if (trendCtx) {
                         this.charts.activityTrend = new Chart(trendCtx, {
@@ -1411,8 +1015,15 @@
                             options: {
                                 responsive: true,
                                 maintainAspectRatio: false,
+                                interaction: {
+                                    intersect: false,
+                                    mode: 'index'
+                                },
                                 plugins: {
-                                    legend: { labels: { color: '#b8c5d6' } }
+                                    legend: { 
+                                        labels: { color: '#b8c5d6' },
+                                        display: !this.isMobile
+                                    }
                                 },
                                 scales: {
                                     y: {
@@ -1429,13 +1040,13 @@
                         });
                     }
 
-                    // Weekly Chart
                     const weeklyCtx = document.getElementById('weeklyChart');
                     if (weeklyCtx) {
                         this.charts.weekly = new Chart(weeklyCtx, {
                             type: 'bar',
                             data: {
-                                labels: ['Fitness', 'Learning', 'Wellness', 'Work', 'Social'],
+                                labels: this.isMobile ? ['Fit', 'Learn', 'Well', 'Work', 'Social'] : 
+                                       ['Fitness', 'Learning', 'Wellness', 'Work', 'Social'],
                                 datasets: [{
                                     label: 'Activities This Week',
                                     data: [5, 3, 4, 8, 2],
@@ -1453,7 +1064,10 @@
                                 responsive: true,
                                 maintainAspectRatio: false,
                                 plugins: {
-                                    legend: { labels: { color: '#b8c5d6' } }
+                                    legend: { 
+                                        labels: { color: '#b8c5d6' },
+                                        display: !this.isMobile
+                                    }
                                 },
                                 scales: {
                                     y: {
@@ -1463,7 +1077,10 @@
                                     },
                                     x: {
                                         grid: { color: 'rgba(255, 255, 255, 0.1)' },
-                                        ticks: { color: '#b8c5d6' }
+                                        ticks: { 
+                                            color: '#b8c5d6',
+                                            maxRotation: this.isMobile ? 45 : 0
+                                        }
                                     }
                                 }
                             }
@@ -1475,7 +1092,6 @@
             }
 
             loadDefaultGoals() {
-                // Only load defaults if no goals exist
                 if (this.goals.length === 0) {
                     this.goals = [
                         {
@@ -1548,7 +1164,7 @@
                                         <div class="goal-progress-fill" style="width: ${progress}%"></div>
                                     </div>
                                 </div>
-                                <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 1rem;">
+                                <div style="font-size: var(--font-size-xs); color: var(--text-secondary); margin-top: var(--spacing-sm);">
                                     ${goal.description}
                                 </div>
                             </div>
@@ -1564,7 +1180,6 @@
                     let completedCount = 0;
                     
                     this.goals.forEach(goal => {
-                        // Simple goal progress simulation
                         if (this.activities.some(a => a.category === goal.category)) {
                             goal.current = Math.min(goal.current + 1, goal.target);
                             if (goal.current >= goal.target) {
@@ -1581,12 +1196,11 @@
             }
 
             createNewGoal() {
-                showStatusMessage('Goal creation feature coming soon! 🎯', 'success');
+                showStatusMessage('🎯 Goal creation coming soon!', 'success');
             }
 
             updateAnalytics() {
                 try {
-                    // Update charts with real data
                     if (this.charts.weekly && this.activities.length > 0) {
                         const categoryData = this.getCategoryData();
                         this.charts.weekly.data.datasets[0].data = categoryData;
@@ -1620,9 +1234,9 @@
 
                     const insights = this.analyzePatterns();
                     container.innerHTML = insights.map(insight => `
-                        <div style="background: var(--surface); padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem; border-left: 4px solid var(--primary);">
-                            <h4 style="margin-bottom: 0.5rem; color: var(--text-primary);">${insight.emoji} ${insight.title}</h4>
-                            <p style="color: var(--text-secondary); font-size: 0.9rem;">${insight.description}</p>
+                        <div style="background: var(--surface); padding: var(--spacing-md); border-radius: var(--border-radius); margin-bottom: var(--spacing-md); border-left: 4px solid var(--primary);">
+                            <h4 style="margin-bottom: var(--spacing-xs); color: var(--text-primary); font-size: var(--font-size-base);">${insight.emoji} ${insight.title}</h4>
+                            <p style="color: var(--text-secondary); font-size: var(--font-size-sm); line-height: 1.4;">${insight.description}</p>
                         </div>
                     `).join('');
                 } catch (error) {
@@ -1669,11 +1283,18 @@
                         description: 'Your data is safely backed up to your personal Google Drive. Access it from any device!'
                     });
                 }
+
+                if (this.isMobile) {
+                    insights.push({
+                        emoji: '📱',
+                        title: 'Mobile Optimized',
+                        description: 'You\'re using the mobile-optimized version of LifeStream. Perfect for tracking on the go!'
+                    });
+                }
                 
                 return insights;
             }
 
-            // Fallback to localStorage
             loadInitialDataFromLocal() {
                 try {
                     const savedActivities = localStorage.getItem('lifestream_activities');
@@ -1724,6 +1345,9 @@
 
         function showStatusMessage(message, type = 'success') {
             try {
+                const existing = document.querySelectorAll('.status-message');
+                existing.forEach(msg => msg.remove());
+
                 const statusDiv = document.createElement('div');
                 statusDiv.className = `status-message status-${type}`;
                 statusDiv.textContent = message;
@@ -1732,9 +1356,13 @@
                 
                 setTimeout(() => {
                     if (statusDiv.parentNode) {
-                        statusDiv.parentNode.removeChild(statusDiv);
+                        statusDiv.style.opacity = '0';
+                        statusDiv.style.transform = 'translateY(-100%)';
+                        setTimeout(() => {
+                            statusDiv.remove();
+                        }, 300);
                     }
-                }, 4000);
+                }, 3000);
             } catch (error) {
                 console.log('Status message:', message);
             }
@@ -1744,14 +1372,1019 @@
         function initializeMainApp() {
             try {
                 window.app = new LifeStreamApp();
-                console.log('✅ Main app initialized after authentication');
+                console.log('✅ Mobile-first app initialized after authentication');
             } catch (error) {
                 console.warn('App initialization error:', error);
-                showStatusMessage('LifeStream loaded in basic mode', 'error');
+                showStatusMessage('⚠️ Started in safe mode', 'error');
             }
         }
 
-        console.log('🚀 LifeStream v2.0 with Google Drive Integration Loaded');
+        // Handle PWA lifecycle
+        window.addEventListener('load', () => {
+            window.addEventListener('online', () => {
+                showStatusMessage('🌐 Back online! Syncing data...', 'success');
+                if (window.app) {
+                    window.app.loadAllData();
+                }
+            });
+
+            window.addEventListener('offline', () => {
+                showStatusMessage('📴 Offline mode - data will sync when reconnected', 'error');
+            });
+
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden && window.app) {
+                    window.app.loadAllData();
+                }
+            });
+        });
+
+        // Global error handler
+        window.addEventListener('error', function(e) {
+            console.warn('Error caught and handled:', e.message);
+            showStatusMessage('⚠️ Minor issue detected, but LifeStream is still working!', 'error');
+            return true;
+        });
+
+        window.addEventListener('unhandledrejection', function(e) {
+            console.warn('Promise rejection caught:', e.reason);
+            showStatusMessage('⚠️ Background process issue - app continues working normally', 'error');
+            return true;
+        });
+
+        console.log('🚀 LifeStream Mobile PWA v2.0 Loaded Successfully');
     </script>
 </body>
-</html>
+</html> 'fitness',
+                        duration: this.extractDuration(msg) || 30,
+                        timestamp: Date.now()
+                    };
+                } else if (msg.includes('read') || msg.includes('book') || msg.includes('study')) {
+                    activity = {
+                        type: 'reading',
+                        category: 'learning',
+                        duration: this.extractDuration(msg) || 30,
+                        timestamp: Date.now()
+                    };
+                } else if (msg.includes('meditat') || msg.includes('yoga') || msg.includes('mindful')) {
+                    activity = {
+                        type: 'meditation',
+                        category: <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LifeStream - AI Life Tracker</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Your AI-powered personal assistant with secure Google Drive storage">
+    <meta name="theme-color" content="#00d4ff">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="LifeStream">
+    <meta name="msapplication-TileColor" content="#00d4ff">
+    <meta name="msapplication-tap-highlight" content="no">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180x180.png">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16x16.png">
+    
+    <!-- Preload Critical Resources -->
+    <link rel="preload" href="js/storage/drive-storage.js" as="script">
+    <link rel="preload" href="js/auth/google-auth.js" as="script">
+    
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.min.js"></script>
+    
+    <!-- Google Drive Storage -->
+    <script src="js/storage/drive-storage.js"></script>
+    
+    <!-- Google Auth Integration -->
+    <script src="js/auth/google-auth.js"></script>
+    
+    <style>
+        /* MOBILE-FIRST CSS VARIABLES */
+        :root {
+            --primary: #00d4ff;
+            --primary-dark: #00a8cc;
+            --secondary: #4ecdc4;
+            --accent: #ff6b6b;
+            --success: #00e676;
+            
+            --bg-primary: #0a0f1c;
+            --bg-secondary: #1a1f2e;
+            --bg-tertiary: #2a3441;
+            --surface: rgba(255, 255, 255, 0.05);
+            --surface-hover: rgba(255, 255, 255, 0.1);
+            
+            --text-primary: #ffffff;
+            --text-secondary: #b8c5d6;
+            --text-muted: #64748b;
+            
+            --border-radius: 12px;
+            --border-radius-lg: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            
+            /* Mobile-optimized spacing */
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+            
+            /* Mobile-optimized typography */
+            --font-size-xs: 12px;
+            --font-size-sm: 14px;
+            --font-size-base: 16px;
+            --font-size-lg: 18px;
+            --font-size-xl: 20px;
+            --font-size-2xl: 24px;
+            --font-size-3xl: 32px;
+            
+            /* Touch targets */
+            --touch-target-min: 44px;
+            --touch-target-lg: 56px;
+        }
+
+        /* MOBILE-FIRST RESET */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            font-size: 16px;
+            -webkit-text-size-adjust: 100%;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            min-height: 100dvh;
+            overflow-x: hidden;
+            position: relative;
+            touch-action: manipulation;
+        }
+
+        /* PWA LOADING SPINNER */
+        .pwa-loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--bg-primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+
+        .pwa-loading.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-logo {
+            font-size: 4rem;
+            margin-bottom: var(--spacing-lg);
+            animation: pulse 2s infinite;
+        }
+
+        .loading-text {
+            color: var(--text-secondary);
+            font-size: var(--font-size-lg);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(0, 212, 255, 0.1);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* MOBILE LOGIN STYLES */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            min-height: 100dvh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: var(--spacing-md);
+        }
+
+        .login-card {
+            background: white;
+            border-radius: var(--border-radius-lg);
+            padding: var(--spacing-xl);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-header h1 {
+            margin: 0 0 var(--spacing-sm) 0;
+            color: #333;
+            font-size: var(--font-size-3xl);
+            font-weight: 700;
+        }
+
+        .login-header p {
+            color: #666;
+            margin: 0 0 var(--spacing-xl) 0;
+            line-height: 1.5;
+            font-size: var(--font-size-base);
+        }
+
+        .login-benefits {
+            margin: var(--spacing-xl) 0;
+            text-align: left;
+        }
+
+        .benefit-item {
+            display: flex;
+            align-items: center;
+            margin: var(--spacing-md) 0;
+            color: #555;
+            font-size: var(--font-size-sm);
+        }
+
+        .benefit-icon {
+            font-size: var(--font-size-lg);
+            margin-right: var(--spacing-sm);
+            width: 24px;
+            flex-shrink: 0;
+        }
+
+        .google-signin-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: var(--spacing-md) var(--spacing-lg);
+            min-height: var(--touch-target-lg);
+            background: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: var(--font-size-base);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            margin: var(--spacing-lg) 0;
+            touch-action: manipulation;
+        }
+
+        .google-signin-button:hover,
+        .google-signin-button:focus {
+            background: #3367d6;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(66, 133, 244, 0.3);
+        }
+
+        .google-signin-button:active {
+            transform: translateY(0);
+        }
+
+        .google-logo {
+            width: 20px;
+            height: 20px;
+            margin-right: var(--spacing-sm);
+            background: white;
+            border-radius: 2px;
+            padding: 2px;
+        }
+
+        .privacy-note {
+            color: #666;
+            margin-top: var(--spacing-lg);
+            line-height: 1.4;
+            font-size: var(--font-size-xs);
+        }
+
+        /* MOBILE USER BAR */
+        .user-bar {
+            background: rgba(26, 31, 46, 0.95);
+            backdrop-filter: blur(20px);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding-top: calc(var(--spacing-sm) + env(safe-area-inset-top));
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: var(--touch-target-min);
+        }
+
+        .user-profile-left {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            margin-right: var(--spacing-sm);
+            flex-shrink: 0;
+        }
+
+        .user-name {
+            font-weight: 500;
+            color: var(--text-primary);
+            font-size: var(--font-size-sm);
+        }
+
+        .storage-status {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .sign-out-btn {
+            background: rgba(220, 53, 69, 0.2);
+            color: #ff6b6b;
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: 16px;
+            cursor: pointer;
+            font-size: var(--font-size-xs);
+            transition: var(--transition);
+            min-height: var(--touch-target-min);
+            min-width: var(--touch-target-min);
+            touch-action: manipulation;
+        }
+
+        .sign-out-btn:hover,
+        .sign-out-btn:focus {
+            background: rgba(220, 53, 69, 0.3);
+        }
+
+        /* MOBILE-FIRST APP LAYOUT */
+        .app {
+            display: flex;
+            flex-direction: column;
+            min-height: calc(100vh - 60px);
+            min-height: calc(100dvh - 60px);
+        }
+
+        .main {
+            flex: 1;
+            padding: var(--spacing-md);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* MOBILE NAVIGATION */
+        .mobile-nav {
+            background: rgba(26, 31, 46, 0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: var(--spacing-xs) 0;
+            display: flex;
+            justify-content: space-around;
+            position: sticky;
+            bottom: 0;
+            z-index: 1000;
+            padding-bottom: calc(var(--spacing-xs) + env(safe-area-inset-bottom));
+        }
+
+        .mobile-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: var(--spacing-xs);
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: var(--transition);
+            min-width: var(--touch-target-min);
+            min-height: var(--touch-target-min);
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+
+        .mobile-nav-item.active {
+            color: var(--primary);
+        }
+
+        .mobile-nav-item:hover,
+        .mobile-nav-item:focus {
+            color: var(--text-primary);
+        }
+
+        .mobile-nav-icon {
+            font-size: var(--font-size-lg);
+            margin-bottom: 2px;
+        }
+
+        .mobile-nav-label {
+            font-size: var(--font-size-xs);
+            font-weight: 500;
+        }
+
+        /* DESKTOP SIDEBAR (hidden on mobile) */
+        .desktop-sidebar {
+            display: none;
+        }
+
+        .desktop-header {
+            display: none;
+        }
+
+        /* MOBILE TAB CONTENT */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeInUp 0.3s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* MOBILE CARDS */
+        .card {
+            background: rgba(26, 31, 46, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(0, 212, 255, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--spacing-lg);
+            flex-wrap: wrap;
+            gap: var(--spacing-sm);
+        }
+
+        .card-title {
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        /* MOBILE DASHBOARD */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: var(--spacing-lg);
+        }
+
+        .progress-rings {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .progress-ring {
+            text-align: center;
+        }
+
+        .ring-container {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            margin: 0 auto var(--spacing-sm);
+        }
+
+        .ring-svg {
+            transform: rotate(-90deg);
+            width: 100%;
+            height: 100%;
+        }
+
+        .ring-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.1);
+            stroke-width: 6;
+        }
+
+        .ring-progress {
+            fill: none;
+            stroke-width: 6;
+            stroke-linecap: round;
+            stroke-dasharray: 251;
+            stroke-dashoffset: 251;
+            transition: stroke-dashoffset 1s ease-in-out;
+        }
+
+        .ring-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .ring-value {
+            font-size: var(--font-size-lg);
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+        }
+
+        .ring-label {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .progress-label {
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .progress-sublabel {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+        }
+
+        /* MOBILE CHAT */
+        .chat-container {
+            height: 60vh;
+            height: 60dvh;
+            background: var(--surface);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-md);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: var(--spacing-md);
+            padding: var(--spacing-sm);
+        }
+
+        .chat-message {
+            margin-bottom: var(--spacing-md);
+        }
+
+        .message-content {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--spacing-xs);
+            padding: var(--spacing-sm);
+            border-radius: var(--border-radius);
+            max-width: 85%;
+            word-wrap: break-word;
+        }
+
+        .user-message .message-content {
+            background: var(--primary);
+            margin-left: auto;
+            flex-direction: row-reverse;
+        }
+
+        .ai-message .message-content {
+            background: var(--surface-hover);
+        }
+
+        .message-emoji {
+            font-size: var(--font-size-lg);
+            flex-shrink: 0;
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: var(--spacing-sm);
+            align-items: flex-end;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: var(--spacing-sm);
+            background: var(--bg-tertiary);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: var(--border-radius);
+            color: white;
+            font-size: var(--font-size-base);
+            min-height: var(--touch-target-min);
+            resize: none;
+            font-family: inherit;
+        }
+
+        .chat-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .send-button {
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: var(--primary);
+            border: none;
+            border-radius: var(--border-radius);
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            min-height: var(--touch-target-min);
+            min-width: var(--touch-target-min);
+            touch-action: manipulation;
+        }
+
+        .send-button:hover,
+        .send-button:focus {
+            background: var(--primary-dark);
+        }
+
+        .send-button:active {
+            transform: scale(0.95);
+        }
+
+        /* MOBILE GOALS */
+        .goals-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+        }
+
+        .goal-card {
+            background: var(--surface);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-md);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: var(--transition);
+        }
+
+        .goal-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .goal-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .goal-emoji {
+            font-size: var(--font-size-xl);
+            margin-right: var(--spacing-sm);
+        }
+
+        .goal-title {
+            font-size: var(--font-size-base);
+            font-weight: 600;
+            color: var(--text-primary);
+            flex: 1;
+        }
+
+        .goal-progress {
+            margin: var(--spacing-md) 0;
+        }
+
+        .goal-progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .goal-progress-bar {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .goal-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .goal-streak {
+            font-size: var(--font-size-xs);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* MOBILE BUTTONS */
+        .btn {
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+            min-height: var(--touch-target-min);
+            font-size: var(--font-size-sm);
+            touch-action: manipulation;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover,
+        .btn-primary:focus {
+            background: var(--primary-dark);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.95);
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover,
+        .btn-secondary:focus {
+            background: var(--surface-hover);
+        }
+
+        /* MOBILE CHARTS */
+        .chart-container {
+            position: relative;
+            height: 250px;
+            margin-top: var(--spacing-md);
+        }
+
+        /* MOBILE STATUS MESSAGES */
+        .status-message {
+            position: fixed;
+            top: var(--spacing-md);
+            left: var(--spacing-md);
+            right: var(--spacing-md);
+            padding: var(--spacing-md);
+            border-radius: var(--border-radius);
+            z-index: 10000;
+            font-weight: 500;
+            animation: slideInDown 0.3s ease-out;
+            font-size: var(--font-size-sm);
+        }
+
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .status-success {
+            background: rgba(0, 230, 118, 0.15);
+            border: 1px solid rgba(0, 230, 118, 0.3);
+            color: #00e676;
+        }
+
+        .status-error {
+            background: rgba(255, 107, 107, 0.15);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            color: #ff6b6b;
+        }
+
+        .temp-message {
+            background: rgba(0, 230, 118, 0.1);
+            border: 1px solid rgba(0, 230, 118, 0.3);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-md);
+            margin: var(--spacing-lg) 0;
+        }
+
+        .temp-message p {
+            margin: var(--spacing-xs) 0;
+            color: #00e676;
+            font-size: var(--font-size-sm);
+        }
+
+        /* PWA INSTALL PROMPT */
+        .install-prompt {
+            position: fixed;
+            bottom: var(--spacing-md);
+            left: var(--spacing-md);
+            right: var(--spacing-md);
+            background: var(--primary);
+            color: white;
+            padding: var(--spacing-md);
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            z-index: 10001;
+        }
+
+        .install-prompt.show {
+            transform: translateY(0);
+        }
+
+        .install-prompt-text {
+            flex: 1;
+            font-size: var(--font-size-sm);
+        }
+
+        .install-prompt-btn {
+            background: white;
+            color: var(--primary);
+            border: none;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            font-size: var(--font-size-xs);
+            min-height: var(--touch-target-min);
+            touch-action: manipulation;
+        }
+
+        .install-prompt-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: var(--font-size-lg);
+            cursor: pointer;
+            padding: var(--spacing-xs);
+            min-height: var(--touch-target-min);
+            min-width: var(--touch-target-min);
+            touch-action: manipulation;
+        }
+
+        /* TABLET RESPONSIVE */
+        @media (min-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .goals-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .progress-rings {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .ring-container {
+                width: 120px;
+                height: 120px;
+            }
+        }
+
+        /* DESKTOP RESPONSIVE */
+        @media (min-width: 1024px) {
+            .mobile-nav {
+                display: none;
+            }
+            
+            .desktop-sidebar {
+                display: block;
+                position: fixed;
+                left: 0;
+                top: 60px;
+                width: 280px;
+                height: calc(100vh - 60px);
+                background: var(--bg-secondary);
+                border-right: 1px solid rgba(255, 255, 255, 0.1);
+                padding: var(--spacing-xl) var(--spacing-lg);
+                overflow-y: auto;
+            }
+            
+            .desktop-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 var(--spacing-xl);
+                height: 80px;
+                background: rgba(26, 31, 46, 0.95);
+                backdrop-filter: blur(20px);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                position: sticky;
+                top: 60px;
+                z-index: 100;
+            }
+            
+            .app {
+                margin-left: 280px;
+                min-height: calc(100vh - 60px);
+            }
+            
+            .main {
+                padding: var(--spacing-xl);
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            }
+            
+            .goals-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            }
+            
+            .chat-container {
+                height: 500px;
+            }
+
+            .nav-section {
+                margin-bottom: 2rem;
+            }
+
+            .nav-section-title {
+                font-size: 0.75rem;
+                color: var(--text-muted);
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                margin-bottom: 1rem;
+                font-weight: 600;
+            }
+
+            .nav-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 12px 16px;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: var(--transition);
+                margin-bottom: 4px;
+                color: var(--text-secondary);
+                text-decoration: none;
+            }
+
+            .nav-item:hover {
+                background: var(--surface);
+                color: var(--text-primary);
+            }
+
+            .nav-item.active {
+                background: linear-gradient(135deg, var(--primary), var(--secondary));
+                color: white;
+            }
+
+            .nav-icon {
+                font-size: 1.2rem;
+                width:
