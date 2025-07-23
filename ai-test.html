@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeStream AI Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #0a0f1c;
+            color: white;
+        }
+        .container {
+            background: rgba(26, 31, 46, 0.8);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .status {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        .status.success { background: rgba(0, 230, 118, 0.1); border: 1px solid #00e676; }
+        .status.error { background: rgba(255, 107, 107, 0.1); border: 1px solid #ff6b6b; }
+        input, button, textarea {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05);
+            color: white;
+            font-size: 16px;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+        button {
+            background: #00d4ff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .response {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid #00d4ff;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 LifeStream AI Test</h1>
+        
+        <div id="status" class="status">
+            📋 Loading AI...
+        </div>
+        
+        <textarea id="testMessage" placeholder="Type: I worked out for 30 minutes"></textarea>
+        <button onclick="testAI()">Test AI Response</button>
+        
+        <div id="responseArea"></div>
+    </div>
+
+    <script src="js/config/api-keys.js"></script>
+    <script src="js/modules/ai-enhanced.js"></script>
+    
+    <script>
+        let ai = null;
+        
+        async function initAI() {
+            try {
+                ai = new LifeStreamAIEnhanced();
+                const result = await ai.initialize(window.LIFESTREAM_CONFIG.GEMINI_API_KEY);
+                
+                const status = document.getElementById('status');
+                if (result.success && result.aiAvailable) {
+                    status.className = 'status success';
+                    status.textContent = '✅ AI Ready! Google Gemini connected.';
+                } else {
+                    status.className = 'status error';
+                    status.textContent = '❌ AI failed to connect. Check your API key.';
+                }
+            } catch (error) {
+                document.getElementById('status').className = 'status error';
+                document.getElementById('status').textContent = '❌ Error: ' + error.message;
+            }
+        }
+        
+        async function testAI() {
+            const message = document.getElementById('testMessage').value;
+            if (!message || !ai) return;
+            
+            try {
+                const response = await ai.generateResponse(message);
+                
+                document.getElementById('responseArea').innerHTML = `
+                    <div class="response">
+                        <h4>🤖 AI Response:</h4>
+                        <p>${response.message}</p>
+                        <small>Type: ${response.type}</small>
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('responseArea').innerHTML = `
+                    <div class="response" style="border-color: #ff6b6b;">
+                        <h4>❌ Error:</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Initialize when page loads
+        window.onload = initAI;
+    </script>
+</body>
+</html>
