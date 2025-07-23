@@ -8,6 +8,9 @@
     <!-- Chart.js for visualizations -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.min.js"></script>
     
+    <!-- Google Auth Integration -->
+    <script src="js/auth/google-auth.js"></script>
+    
     <style>
         * {
             margin: 0;
@@ -44,6 +47,134 @@
             overflow-x: hidden;
         }
 
+        /* LOGIN UI STYLES */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .login-header h1 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 2.5em;
+        }
+
+        .login-header p {
+            color: #666;
+            margin: 0 0 30px 0;
+            line-height: 1.5;
+        }
+
+        .login-benefits {
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .benefit-item {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            color: #555;
+        }
+
+        .benefit-icon {
+            font-size: 1.2em;
+            margin-right: 12px;
+            width: 20px;
+        }
+
+        .google-signin-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 12px 24px;
+            background: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 20px 0;
+        }
+
+        .google-signin-button:hover {
+            background: #3367d6;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(66, 133, 244, 0.3);
+        }
+
+        .google-logo {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            background: white;
+            border-radius: 2px;
+            padding: 2px;
+        }
+
+        .privacy-note {
+            color: #666;
+            margin-top: 20px;
+            line-height: 1.4;
+        }
+
+        /* USER BAR STYLES */
+        .user-bar {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 15px;
+        }
+
+        .user-name {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .sign-out-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .sign-out-btn:hover {
+            background: #c82333;
+        }
+
+        /* MAIN APP STYLES */
         .app {
             display: grid;
             grid-template-areas: 
@@ -557,244 +688,308 @@
         .btn-secondary:hover {
             background: var(--surface-hover);
         }
+
+        .temp-message {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .temp-message p {
+            margin: 10px 0;
+            color: #155724;
+        }
     </style>
 </head>
 <body>
-    <div class="app">
-        <!-- Header -->
-        <header class="header">
-            <div class="logo">
-                <div class="logo-icon">📊</div>
-                <span>LifeStream v2.0</span>
+    <!-- Login Section (shows when not authenticated) -->
+    <div id="login-section" class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <h1>🌊 LifeStream</h1>
+                <p>Your AI-powered personal assistant with secure cloud storage</p>
             </div>
             
-            <div class="header-stats">
-                <div class="stat-item">
-                    <div class="stat-value" id="currentStreak">0</div>
-                    <div class="stat-label">Day Streak</div>
+            <div class="login-benefits">
+                <div class="benefit-item">
+                    <span class="benefit-icon">🔒</span>
+                    <span>Your data stays in YOUR Google Drive</span>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="totalPoints">0</div>
-                    <div class="stat-label">Points</div>
+                <div class="benefit-item">
+                    <span class="benefit-icon">🤖</span>
+                    <span>Powered by advanced AI</span>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="completedGoals">0</div>
-                    <div class="stat-label">Goals Today</div>
+                <div class="benefit-item">
+                    <span class="benefit-icon">☁️</span>
+                    <span>Access from anywhere</span>
+                </div>
+                <div class="benefit-item">
+                    <span class="benefit-icon">🚀</span>
+                    <span>No setup required</span>
                 </div>
             </div>
-            
-            <div style="text-align: right;">
-                <div style="font-size: 0.9rem; font-weight: 600;">Life Explorer</div>
-                <div style="font-size: 0.75rem; color: var(--text-secondary);" id="userLevel">Explorer</div>
-            </div>
-        </header>
 
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <nav>
-                <div class="nav-section">
-                    <div class="nav-section-title">Main</div>
-                    <div class="nav-item active" data-tab="dashboard">
-                        <span class="nav-icon">🏠</span>
-                        <span>Dashboard</span>
+            <button id="google-signin-btn" class="google-signin-button" onclick="googleAuth.signIn()">
+                <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" class="google-logo">
+                Sign in with Google
+            </button>
+            
+            <div class="privacy-note">
+                <small>🔐 We only access files created by LifeStream. Your privacy is protected.</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Section (shows when authenticated) -->
+    <div id="main-app" style="display: none;">
+        <!-- User Info Bar -->
+        <div class="user-bar">
+            <div id="user-info"></div>
+        </div>
+
+        <div class="app">
+            <!-- Header -->
+            <header class="header">
+                <div class="logo">
+                    <div class="logo-icon">📊</div>
+                    <span>LifeStream v2.0</span>
+                </div>
+                
+                <div class="header-stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="currentStreak">0</div>
+                        <div class="stat-label">Day Streak</div>
                     </div>
-                    <div class="nav-item" data-tab="chat">
-                        <span class="nav-icon">💬</span>
-                        <span>Chat & Log</span>
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalPoints">0</div>
+                        <div class="stat-label">Points</div>
                     </div>
-                    <div class="nav-item" data-tab="goals">
-                        <span class="nav-icon">🎯</span>
-                        <span>Goals</span>
+                    <div class="stat-item">
+                        <div class="stat-value" id="completedGoals">0</div>
+                        <div class="stat-label">Goals Today</div>
                     </div>
                 </div>
                 
-                <div class="nav-section">
-                    <div class="nav-section-title">Analytics</div>
-                    <div class="nav-item" data-tab="analytics">
-                        <span class="nav-icon">📈</span>
-                        <span>Analytics</span>
-                    </div>
-                    <div class="nav-item" data-tab="insights">
-                        <span class="nav-icon">💡</span>
-                        <span>Insights</span>
-                    </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 0.9rem; font-weight: 600;">Life Explorer</div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);" id="userLevel">Explorer</div>
                 </div>
-            </nav>
-        </aside>
+            </header>
 
-        <!-- Main Content -->
-        <main class="main">
-            <!-- Dashboard Tab -->
-            <div id="dashboardTab" class="tab-content active">
-                <!-- Progress Rings -->
-                <div class="progress-rings">
-                    <div class="progress-ring">
-                        <div class="ring-container">
-                            <svg class="ring-svg">
-                                <circle class="ring-bg" cx="60" cy="60" r="50"></circle>
-                                <circle class="ring-progress" cx="60" cy="60" r="50" 
-                                        stroke="#00d4ff" id="goalProgressRing"></circle>
-                            </svg>
-                            <div class="ring-text">
-                                <div class="ring-value" id="goalProgress">0%</div>
-                                <div class="ring-label">Goals</div>
-                            </div>
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <nav>
+                    <div class="nav-section">
+                        <div class="nav-section-title">Main</div>
+                        <div class="nav-item active" data-tab="dashboard">
+                            <span class="nav-icon">🏠</span>
+                            <span>Dashboard</span>
                         </div>
-                        <div class="progress-label">Daily Goals</div>
-                        <div class="progress-sublabel">Track your progress</div>
+                        <div class="nav-item" data-tab="chat">
+                            <span class="nav-icon">💬</span>
+                            <span>Chat & Log</span>
+                        </div>
+                        <div class="nav-item" data-tab="goals">
+                            <span class="nav-icon">🎯</span>
+                            <span>Goals</span>
+                        </div>
                     </div>
                     
-                    <div class="progress-ring">
-                        <div class="ring-container">
-                            <svg class="ring-svg">
-                                <circle class="ring-bg" cx="60" cy="60" r="50"></circle>
-                                <circle class="ring-progress" cx="60" cy="60" r="50" 
-                                        stroke="#4ecdc4" id="activityProgressRing"></circle>
-                            </svg>
-                            <div class="ring-text">
-                                <div class="ring-value" id="activityProgress">0</div>
-                                <div class="ring-label">Activities</div>
-                            </div>
+                    <div class="nav-section">
+                        <div class="nav-section-title">Analytics</div>
+                        <div class="nav-item" data-tab="analytics">
+                            <span class="nav-icon">📈</span>
+                            <span>Analytics</span>
                         </div>
-                        <div class="progress-label">This Week</div>
-                        <div class="progress-sublabel">Stay active</div>
+                        <div class="nav-item" data-tab="insights">
+                            <span class="nav-icon">💡</span>
+                            <span>Insights</span>
+                        </div>
                     </div>
-                    
-                    <div class="progress-ring">
-                        <div class="ring-container">
-                            <svg class="ring-svg">
-                                <circle class="ring-bg" cx="60" cy="60" r="50"></circle>
-                                <circle class="ring-progress" cx="60" cy="60" r="50" 
-                                        stroke="#ff6b6b" id="achievementProgressRing"></circle>
-                            </svg>
-                            <div class="ring-text">
-                                <div class="ring-value" id="achievementProgress">0</div>
-                                <div class="ring-label">Badges</div>
+                </nav>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main">
+                <!-- Dashboard Tab -->
+                <div id="dashboardTab" class="tab-content active">
+                    <!-- Progress Rings -->
+                    <div class="progress-rings">
+                        <div class="progress-ring">
+                            <div class="ring-container">
+                                <svg class="ring-svg">
+                                    <circle class="ring-bg" cx="60" cy="60" r="50"></circle>
+                                    <circle class="ring-progress" cx="60" cy="60" r="50" 
+                                            stroke="#00d4ff" id="goalProgressRing"></circle>
+                                </svg>
+                                <div class="ring-text">
+                                    <div class="ring-value" id="goalProgress">0%</div>
+                                    <div class="ring-label">Goals</div>
+                                </div>
+                            </div>
+                            <div class="progress-label">Daily Goals</div>
+                            <div class="progress-sublabel">Track your progress</div>
+                        </div>
+                        
+                        <div class="progress-ring">
+                            <div class="ring-container">
+                                <svg class="ring-svg">
+                                    <circle class="ring-bg" cx="60" cy="60" r="50"></circle>
+                                    <circle class="ring-progress" cx="60" cy="60" r="50" 
+                                            stroke="#4ecdc4" id="activityProgressRing"></circle>
+                                </svg>
+                                <div class="ring-text">
+                                    <div class="ring-value" id="activityProgress">0</div>
+                                    <div class="ring-label">Activities</div>
+                                </div>
+                            </div>
+                            <div class="progress-label">This Week</div>
+                            <div class="progress-sublabel">Stay active</div>
+                        </div>
+                        
+                        <div class="progress-ring">
+                            <div class="ring-container">
+                                <svg class="ring-svg">
+                                    <circle class="ring-bg" cx="60" cy="60" r="50"></circle>
+                                    <circle class="ring-progress" cx="60" cy="60" r="50" 
+                                            stroke="#ff6b6b" id="achievementProgressRing"></circle>
+                                </svg>
+                                <div class="ring-text">
+                                    <div class="ring-value" id="achievementProgress">0</div>
+                                    <div class="ring-label">Badges</div>
+                                </div>
+                            </div>
+                            <div class="progress-label">Achievements</div>
+                            <div class="progress-sublabel">Unlock rewards</div>
+                        </div>
+                    </div>
+
+                    <!-- Dashboard Cards -->
+                    <div class="dashboard-grid">
+                        <div class="card animate-fadeInUp">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <span>📈</span>
+                                    Activity Trend
+                                </h3>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="activityTrendChart"></canvas>
                             </div>
                         </div>
-                        <div class="progress-label">Achievements</div>
-                        <div class="progress-sublabel">Unlock rewards</div>
+                        
+                        <div class="card animate-fadeInUp" style="animation-delay: 0.1s">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <span>🎯</span>
+                                    Welcome to LifeStream!
+                                </h3>
+                            </div>
+                            <div>
+                                <div class="temp-message">
+                                    <p>✅ Google Drive connected successfully!</p>
+                                    <p>🤖 AI integration ready!</p>
+                                    <p>🚀 Ready for Phase 3: Full app integration!</p>
+                                </div>
+                                <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                                    Start logging your activities in the Chat tab to see beautiful analytics here!
+                                </p>
+                                <button class="btn btn-primary" onclick="switchToChat()">
+                                    Start Tracking 🚀
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Dashboard Cards -->
-                <div class="dashboard-grid">
-                    <div class="card animate-fadeInUp">
+                <!-- Chat Tab -->
+                <div id="chatTab" class="tab-content">
+                    <div class="card">
                         <div class="card-header">
                             <h3 class="card-title">
-                                <span>📈</span>
-                                Activity Trend
+                                <span>💬</span>
+                                Chat with LifeStream AI
                             </h3>
                         </div>
-                        <div class="chart-container">
-                            <canvas id="activityTrendChart"></canvas>
+                        
+                        <div class="chat-container">
+                            <div class="chat-messages" id="chatMessages">
+                                <div class="chat-message ai-message">
+                                    <div class="message-content">
+                                        <span class="message-emoji">🤖</span>
+                                        <span>Welcome to LifeStream! I'm here to help you track your amazing journey. What would you like to log today? Try saying something like "I worked out for 30 minutes" or "I read for 45 minutes"!</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="chat-input-container">
+                                <input type="text" id="chatInput" class="chat-input" placeholder="Tell me about your day..." />
+                                <button class="send-button" onclick="sendMessage()">Send</button>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="card animate-fadeInUp" style="animation-delay: 0.1s">
+                </div>
+
+                <!-- Goals Tab -->
+                <div id="goalsTab" class="tab-content">
+                    <div class="card">
                         <div class="card-header">
                             <h3 class="card-title">
                                 <span>🎯</span>
-                                Welcome to LifeStream!
+                                Your Goals
+                            </h3>
+                            <button class="btn btn-primary" onclick="createNewGoal()">+ New Goal</button>
+                        </div>
+                        
+                        <div class="goals-grid" id="goalsGrid">
+                            <!-- Goals will be populated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Tab -->
+                <div id="analyticsTab" class="tab-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <span>📊</span>
+                                Analytics Dashboard
                             </h3>
                         </div>
+                        
                         <div>
-                            <p style="color: var(--text-secondary); margin-bottom: 1rem;">
-                                Start logging your activities in the Chat tab to see beautiful analytics here!
+                            <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+                                Start logging activities to see detailed analytics and insights about your progress!
                             </p>
-                            <button class="btn btn-primary" onclick="switchToChat()">
-                                Start Tracking 🚀
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Chat Tab -->
-            <div id="chatTab" class="tab-content">
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">
-                            <span>💬</span>
-                            Chat with LifeStream AI
-                        </h3>
-                    </div>
-                    
-                    <div class="chat-container">
-                        <div class="chat-messages" id="chatMessages">
-                            <div class="chat-message ai-message">
-                                <div class="message-content">
-                                    <span class="message-emoji">🤖</span>
-                                    <span>Welcome to LifeStream! I'm here to help you track your amazing journey. What would you like to log today? Try saying something like "I worked out for 30 minutes" or "I read for 45 minutes"!</span>
-                                </div>
+                            
+                            <div class="chart-container">
+                                <canvas id="weeklyChart"></canvas>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Insights Tab -->
+                <div id="insightsTab" class="tab-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <span>💡</span>
+                                Personalized Insights
+                            </h3>
+                        </div>
                         
-                        <div class="chat-input-container">
-                            <input type="text" id="chatInput" class="chat-input" placeholder="Tell me about your day..." />
-                            <button class="send-button" onclick="sendMessage()">Send</button>
+                        <div id="insightsContent">
+                            <p style="color: var(--text-secondary);">
+                                As you log more activities, I'll generate personalized insights about your patterns and progress!
+                            </p>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Goals Tab -->
-            <div id="goalsTab" class="tab-content">
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">
-                            <span>🎯</span>
-                            Your Goals
-                        </h3>
-                        <button class="btn btn-primary" onclick="createNewGoal()">+ New Goal</button>
-                    </div>
-                    
-                    <div class="goals-grid" id="goalsGrid">
-                        <!-- Goals will be populated here -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Analytics Tab -->
-            <div id="analyticsTab" class="tab-content">
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">
-                            <span>📊</span>
-                            Analytics Dashboard
-                        </h3>
-                    </div>
-                    
-                    <div>
-                        <p style="color: var(--text-secondary); margin-bottom: 2rem;">
-                            Start logging activities to see detailed analytics and insights about your progress!
-                        </p>
-                        
-                        <div class="chart-container">
-                            <canvas id="weeklyChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Insights Tab -->
-            <div id="insightsTab" class="tab-content">
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">
-                            <span>💡</span>
-                            Personalized Insights
-                        </h3>
-                    </div>
-                    
-                    <div id="insightsContent">
-                        <p style="color: var(--text-secondary);">
-                            As you log more activities, I'll generate personalized insights about your patterns and progress!
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </main>
+            </main>
+        </div>
     </div>
 
     <script>
@@ -982,7 +1177,7 @@
                 this.activities.push(activity);
                 this.stats.totalActivities++;
                 
-                // Save to localStorage
+                // Save to localStorage (will eventually be replaced with Google Drive)
                 try {
                     localStorage.setItem('lifestream_activities', JSON.stringify(this.activities));
                     localStorage.setItem('lifestream_stats', JSON.stringify(this.stats));
@@ -1431,26 +1626,24 @@
             }
         }
 
-        // Initialize app when DOM is ready
+        // Initialize app when DOM is ready (only after authentication)
         document.addEventListener('DOMContentLoaded', function() {
+            // App will be initialized by Google Auth after successful login
+            console.log('🚀 LifeStream v2.0 with Google Auth Ready');
+        });
+
+        // Function to initialize main app after authentication
+        function initializeMainApp() {
             try {
                 window.app = new LifeStreamApp();
+                console.log('✅ Main app initialized after authentication');
             } catch (error) {
                 console.warn('App initialization error:', error);
                 showStatusMessage('LifeStream loaded in basic mode', 'error');
             }
-        });
-
-        // Initialize immediately if DOM is already loaded
-        if (document.readyState !== 'loading') {
-            try {
-                window.app = new LifeStreamApp();
-            } catch (error) {
-                console.warn('App initialization error:', error);
-            }
         }
 
-        console.log('🚀 LifeStream v2.0 Clean Version Loaded');
+        console.log('🚀 LifeStream v2.0 with Authentication Loaded');
     </script>
 </body>
 </html>
