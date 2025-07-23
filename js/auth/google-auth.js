@@ -237,3 +237,64 @@ class GoogleAuth {
     updateUI(isSignedIn) {
         const loginSection = document.getElementById('login-section');
         const mainApp = document.getElementById('main-app');
+        if (isSignedIn) {
+            if (loginSection) loginSection.style.display = 'none';
+            if (mainApp) mainApp.style.display = 'block';
+        } else {
+            if (loginSection) loginSection.style.display = 'block';
+            if (mainApp) mainApp.style.display = 'none';
+        }
+    }
+
+    // Initialize Drive storage
+    async initializeDriveStorage() {
+        try {
+            if (window.driveStorage) {
+                await window.driveStorage.init();
+                console.log('✅ Drive storage initialized');
+            }
+        } catch (error) {
+            console.warn('Drive storage initialization failed:', error);
+        }
+    }
+
+    // Update sign-in button state
+    updateSignInButton(loading) {
+        const signInBtn = document.getElementById('google-signin-btn');
+        if (signInBtn) {
+            signInBtn.disabled = loading;
+            signInBtn.textContent = loading ? 'Signing in...' : 'Sign in with Google';
+        }
+    }
+
+    // Show error message
+    showError(message) {
+        console.error('Auth Error:', message);
+        if (typeof showStatusMessage === 'function') {
+            showStatusMessage(message, 'error');
+        }
+    }
+
+    // Show status message
+    showStatusMessage(message, type) {
+        console.log('Status:', message);
+        if (typeof showStatusMessage === 'function') {
+            showStatusMessage(message, type);
+        }
+    }
+
+    // Clear cached data
+    clearCachedData() {
+        localStorage.removeItem('lifestream_activities');
+        localStorage.removeItem('lifestream_stats');
+        localStorage.removeItem('lifestream_goals');
+    }
+}
+
+// Create global instance
+const googleAuth = new GoogleAuth();
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    googleAuth.init();
+});
