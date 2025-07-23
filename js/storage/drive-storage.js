@@ -1,279 +1,107 @@
-// LifeStream Google Drive Storage
-// Customer-first approach: Secure, private storage in user's own Drive
-
+// Google Drive Storage for LifeStream
 class DriveStorage {
     constructor() {
-        this.APP_FOLDER_NAME = '.lifestream';
-        this.appFolderId = null;
         this.isInitialized = false;
+        this.folderName = 'LifeStream_Data';
+        this.folderId = null;
+        this.demoMode = false;
+        this.init();
     }
 
-    // Initialize Drive storage
     async init() {
         try {
             console.log('📁 Initializing Google Drive storage...');
             
-            // Ensure Google Drive API is ready
-            if (!gapi.client.drive) {
-                await gapi.client.load('drive', 'v3');
+            // Wait for Google Auth to be ready
+            await this.waitForAuth();
+            
+            if (googleAuth.isDemoMode) {
+                this.setupDemoMode();
+                return;
             }
 
-            // Create or find app folder
-            await this.ensureAppFolder();
-            
+            // Initialize Google Drive API
+            await gapi.client.init({
+                apiKey: 'YOUR_API_KEY_HERE', // Replace with your API key
+                clientId: 'YOUR_CLIENT_ID_HERE', // Replace with your client ID
+                discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+                scope: 'https://www.googleapis.com/auth/drive.file'
+            });
+
+            await this.ensureDataFolder();
             this.isInitialized = true;
-            console.log('✅ Drive storage initialized successfully');
-            return true;
+            
+            console.log('✅ Google Drive storage initialized');
             
         } catch (error) {
-            console.error('❌ Drive storage initialization failed:', error);
-            return false;
+            console.warn('⚠️ Drive storage initialization failed:', error);
+            this.setupDemoMode();
         }
     }
 
-    // Create or find the hidden app folder
-    async ensureAppFolder() {
+    async waitForAuth() {
+        return new Promise((resolve) => {
+            const checkAuth = () => {
+                if (typeof googleAuth !== 'undefined') {
+                    resolve();
+                } else {
+                    setTimeout(checkAuth, 100);
+                }
+            };
+            checkAuth();
+        });
+    }
+
+    setupDemoMode() {
+        console.log('📱 Drive storage in demo mode - using localStorage');
+        this.demoMode = true;
+        this.isInitialized = true;
+    }
+
+    async ensureDataFolder() {
         try {
-            // Search for existing app folder
+            // Search for existing LifeStream folder
             const response = await gapi.client.drive.files.list({
-                q: `name='${this.APP_FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
-                fields: 'files(id, name)'
+                q: `name='${this.folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+                spaces: 'drive'
             });
 
             if (response.result.files.length > 0) {
-                // Folder exists
-                this.appFolderId = response.result.files[0].id;
-                console.log('📂 Found existing LifeStream folder:', this.appFolderId);
+                this.folderId = response.result.files[0].id;
+                console.log('📁 Found existing LifeStream folder');
             } else {
                 // Create new folder
                 const folderResponse = await gapi.client.drive.files.create({
                     resource: {
-                        name: this.APP_FOLDER_NAME,
-                        mimeType: 'application/vnd.google-apps.folder',
-                        parents: ['appDataFolder'] // Hidden from user's main Drive view
-                    },
-                    fields: 'id'
+                        name: this.folderName,
+                        mimeType: 'application/vnd.google-apps.folder'
+                    }
                 });
                 
-                this.appFolderId = folderResponse.result.id;
-                console.log('📁 Created new LifeStream folder:', this.appFolderId);
+                this.folderId = folderResponse.result.id;
+                console.log('📁 Created new LifeStream folder');
             }
-
-            return this.appFolderId;
             
         } catch (error) {
-            console.error('❌ Failed to create/find app folder:', error);
+            console.warn('Folder creation error:', error);
             throw error;
         }
     }
 
-    // Save user activities to Drive
-    async saveActivities(activities) {
-        try {
-            if (!this.isInitialized) {
-                await this.init();
-            }
-
-            const fileName = 'activities.json';
-            const fileContent = JSON.stringify({
-                activities: activities,
-                lastUpdated: new Date().toISOString(),
-                version: '2.0'
-            }, null, 2);
-
-            // Check if file exists
-            const existingFile = await this.findFile(fileName);
-            
-            if (existingFile) {
-                // Update existing file
-                await this.updateFile(existingFile.id, fileContent);
-                console.log('✅ Activities updated in Drive');
-            } else {
-                // Create new file
-                await this.createFile(fileName, fileContent);
-                console.log('✅ Activities saved to Drive');
-            }
-
-            return true;
-            
-        } catch (error) {
-            console.error('❌ Failed to save activities:', error);
-            return false;
+    async saveFile(filename, data) {
+        if (this.demoMode) {
+            return this.saveToLocalStorage(filename, data);
         }
-    }
 
-    // Load user activities from Drive
-    async loadActivities() {
         try {
-            if (!this.isInitialized) {
-                await this.init();
-            }
-
-            const fileName = 'activities.json';
-            const file = await this.findFile(fileName);
-            
-            if (!file) {
-                console.log('📄 No activities file found, starting fresh');
-                return [];
-            }
-
-            const content = await this.getFileContent(file.id);
-            const data = JSON.parse(content);
-            
-            console.log('✅ Activities loaded from Drive:', data.activities.length, 'activities');
-            return data.activities || [];
-            
-        } catch (error) {
-            console.error('❌ Failed to load activities:', error);
-            return [];
-        }
-    }
-
-    // Save user stats to Drive
-    async saveStats(stats) {
-        try {
-            if (!this.isInitialized) {
-                await this.init();
-            }
-
-            const fileName = 'stats.json';
-            const fileContent = JSON.stringify({
-                stats: stats,
-                lastUpdated: new Date().toISOString(),
-                version: '2.0'
-            }, null, 2);
-
-            const existingFile = await this.findFile(fileName);
-            
-            if (existingFile) {
-                await this.updateFile(existingFile.id, fileContent);
-                console.log('✅ Stats updated in Drive');
-            } else {
-                await this.createFile(fileName, fileContent);
-                console.log('✅ Stats saved to Drive');
-            }
-
-            return true;
-            
-        } catch (error) {
-            console.error('❌ Failed to save stats:', error);
-            return false;
-        }
-    }
-
-    // Load user stats from Drive
-    async loadStats() {
-        try {
-            if (!this.isInitialized) {
-                await this.init();
-            }
-
-            const fileName = 'stats.json';
-            const file = await this.findFile(fileName);
-            
-            if (!file) {
-                console.log('📊 No stats file found, starting fresh');
-                return null;
-            }
-
-            const content = await this.getFileContent(file.id);
-            const data = JSON.parse(content);
-            
-            console.log('✅ Stats loaded from Drive');
-            return data.stats || null;
-            
-        } catch (error) {
-            console.error('❌ Failed to load stats:', error);
-            return null;
-        }
-    }
-
-    // Save user goals to Drive
-    async saveGoals(goals) {
-        try {
-            if (!this.isInitialized) {
-                await this.init();
-            }
-
-            const fileName = 'goals.json';
-            const fileContent = JSON.stringify({
-                goals: goals,
-                lastUpdated: new Date().toISOString(),
-                version: '2.0'
-            }, null, 2);
-
-            const existingFile = await this.findFile(fileName);
-            
-            if (existingFile) {
-                await this.updateFile(existingFile.id, fileContent);
-                console.log('✅ Goals updated in Drive');
-            } else {
-                await this.createFile(fileName, fileContent);
-                console.log('✅ Goals saved to Drive');
-            }
-
-            return true;
-            
-        } catch (error) {
-            console.error('❌ Failed to save goals:', error);
-            return false;
-        }
-    }
-
-    // Load user goals from Drive
-    async loadGoals() {
-        try {
-            if (!this.isInitialized) {
-                await this.init();
-            }
-
-            const fileName = 'goals.json';
-            const file = await this.findFile(fileName);
-            
-            if (!file) {
-                console.log('🎯 No goals file found, starting fresh');
-                return [];
-            }
-
-            const content = await this.getFileContent(file.id);
-            const data = JSON.parse(content);
-            
-            console.log('✅ Goals loaded from Drive:', data.goals.length, 'goals');
-            return data.goals || [];
-            
-        } catch (error) {
-            console.error('❌ Failed to load goals:', error);
-            return [];
-        }
-    }
-
-    // Helper: Find file by name in app folder
-    async findFile(fileName) {
-        try {
-            const response = await gapi.client.drive.files.list({
-                q: `name='${fileName}' and parents in '${this.appFolderId}' and trashed=false`,
-                fields: 'files(id, name, modifiedTime)'
-            });
-
-            return response.result.files.length > 0 ? response.result.files[0] : null;
-            
-        } catch (error) {
-            console.error('❌ Failed to find file:', error);
-            return null;
-        }
-    }
-
-    // Helper: Create new file
-    async createFile(fileName, content) {
-        try {
+            const fileContent = JSON.stringify(data, null, 2);
             const boundary = '-------314159265358979323846';
             const delimiter = "\r\n--" + boundary + "\r\n";
             const close_delim = "\r\n--" + boundary + "--";
 
             const metadata = {
-                name: fileName,
-                parents: [this.appFolderId],
-                mimeType: 'application/json'
+                name: filename,
+                parents: [this.folderId]
             };
 
             const multipartRequestBody =
@@ -282,7 +110,7 @@ class DriveStorage {
                 JSON.stringify(metadata) +
                 delimiter +
                 'Content-Type: application/json\r\n\r\n' +
-                content +
+                fileContent +
                 close_delim;
 
             const request = gapi.client.request({
@@ -295,118 +123,111 @@ class DriveStorage {
                 body: multipartRequestBody
             });
 
-            return await request;
+            const response = await request;
+            console.log(`✅ Saved ${filename} to Drive`);
+            return response.result;
             
         } catch (error) {
-            console.error('❌ Failed to create file:', error);
-            throw error;
+            console.warn(`Save error for ${filename}:`, error);
+            // Fallback to localStorage
+            return this.saveToLocalStorage(filename, data);
         }
     }
 
-    // Helper: Update existing file
-    async updateFile(fileId, content) {
+    async loadFile(filename) {
+        if (this.demoMode) {
+            return this.loadFromLocalStorage(filename);
+        }
+
         try {
-            const boundary = '-------314159265358979323846';
-            const delimiter = "\r\n--" + boundary + "\r\n";
-            const close_delim = "\r\n--" + boundary + "--";
-
-            const multipartRequestBody =
-                delimiter +
-                'Content-Type: application/json\r\n\r\n' +
-                delimiter +
-                'Content-Type: application/json\r\n\r\n' +
-                content +
-                close_delim;
-
-            const request = gapi.client.request({
-                path: 'https://www.googleapis.com/upload/drive/v3/files/' + fileId,
-                method: 'PATCH',
-                params: { uploadType: 'multipart' },
-                headers: {
-                    'Content-Type': 'multipart/related; boundary="' + boundary + '"'
-                },
-                body: multipartRequestBody
+            // Search for the file
+            const response = await gapi.client.drive.files.list({
+                q: `name='${filename}' and parents in '${this.folderId}' and trashed=false`,
+                spaces: 'drive'
             });
 
-            return await request;
-            
-        } catch (error) {
-            console.error('❌ Failed to update file:', error);
-            throw error;
-        }
-    }
+            if (response.result.files.length === 0) {
+                console.log(`📄 ${filename} not found in Drive`);
+                return null;
+            }
 
-    // Helper: Get file content
-    async getFileContent(fileId) {
-        try {
-            const response = await gapi.client.drive.files.get({
+            const fileId = response.result.files[0].id;
+            
+            // Download file content
+            const fileResponse = await gapi.client.drive.files.get({
                 fileId: fileId,
                 alt: 'media'
             });
 
-            return response.body;
+            const data = JSON.parse(fileResponse.body);
+            console.log(`✅ Loaded ${filename} from Drive`);
+            return data;
             
         } catch (error) {
-            console.error('❌ Failed to get file content:', error);
-            throw error;
+            console.warn(`Load error for ${filename}:`, error);
+            // Fallback to localStorage
+            return this.loadFromLocalStorage(filename);
         }
     }
 
-    // Get storage info for user
-    async getStorageInfo() {
+    saveToLocalStorage(filename, data) {
         try {
-            if (!this.isInitialized) {
-                await this.init();
+            localStorage.setItem(`lifestream_${filename}`, JSON.stringify(data));
+            console.log(`💾 Saved ${filename} to localStorage`);
+            return Promise.resolve({ id: 'local_' + filename });
+        } catch (error) {
+            console.warn(`localStorage save error for ${filename}:`, error);
+            return Promise.reject(error);
+        }
+    }
+
+    loadFromLocalStorage(filename) {
+        try {
+            const data = localStorage.getItem(`lifestream_${filename}`);
+            if (data) {
+                console.log(`💾 Loaded ${filename} from localStorage`);
+                return Promise.resolve(JSON.parse(data));
             }
-
-            // List all LifeStream files
-            const response = await gapi.client.drive.files.list({
-                q: `parents in '${this.appFolderId}' and trashed=false`,
-                fields: 'files(id, name, size, modifiedTime, createdTime)'
-            });
-
-            const files = response.result.files;
-            const totalSize = files.reduce((sum, file) => sum + parseInt(file.size || 0), 0);
-
-            return {
-                fileCount: files.length,
-                totalSize: totalSize,
-                lastModified: files.length > 0 ? 
-                    Math.max(...files.map(f => new Date(f.modifiedTime).getTime())) : null,
-                files: files
-            };
-            
+            return Promise.resolve(null);
         } catch (error) {
-            console.error('❌ Failed to get storage info:', error);
-            return null;
+            console.warn(`localStorage load error for ${filename}:`, error);
+            return Promise.resolve(null);
         }
     }
 
-    // Export all user data (for backup)
-    async exportAllData() {
-        try {
-            const activities = await this.loadActivities();
-            const stats = await this.loadStats();
-            const goals = await this.loadGoals();
+    // Convenience methods for app data
+    async saveActivities(activities) {
+        return this.saveFile('activities.json', activities);
+    }
 
-            const exportData = {
-                exportDate: new Date().toISOString(),
-                version: '2.0',
-                activities: activities,
-                stats: stats,
-                goals: goals
-            };
+    async loadActivities() {
+        return this.loadFile('activities.json');
+    }
 
-            return exportData;
-            
-        } catch (error) {
-            console.error('❌ Failed to export data:', error);
-            return null;
+    async saveStats(stats) {
+        return this.saveFile('stats.json', stats);
+    }
+
+    async loadStats() {
+        return this.loadFile('stats.json');
+    }
+
+    async saveGoals(goals) {
+        return this.saveFile('goals.json', goals);
+    }
+
+    async loadGoals() {
+        return this.loadFile('goals.json');
+    }
+
+    getStorageStatus() {
+        if (this.demoMode) {
+            return '💾 Using local storage (demo mode)';
         }
+        return this.isInitialized ? '📁 Connected to Google Drive' : '⚠️ Connecting...';
     }
 }
 
-// Create global instance
-if (!window.driveStorage) {
-    window.driveStorage = new DriveStorage();
-}
+// Initialize Drive Storage
+const driveStorage = new DriveStorage();
+console.log('📁 Drive storage module loaded');
