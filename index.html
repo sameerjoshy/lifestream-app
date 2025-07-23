@@ -1481,6 +1481,37 @@
     <!-- ✅ ADD THESE TWO LINES HERE -->
     <script src="js/modules/enhanced-chat.js"></script>
     <!-- <script src="js/core/enhanced-integration.js"></script> -->
+  <script src="js/modules/enhanced-chat.js"></script>
+<!-- <script src="js/core/enhanced-integration.js"></script> -->
+
+<script>
+// Simple Enhanced Chat Integration
+setTimeout(() => {
+    try {
+        console.log('🔧 Initializing Simple Enhanced Chat...');
+        
+        if (window.LifeStream?.EnhancedChatModule) {
+            window.LifeStream.chatModule = new window.LifeStream.EnhancedChatModule();
+            
+            // Initialize when user clicks chat
+            const chatTabs = document.querySelectorAll('[data-tab="chat"]');
+            chatTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    setTimeout(() => {
+                        if (!window.LifeStream.chatModule.initialized) {
+                            window.LifeStream.chatModule.initialize();
+                        }
+                    }, 500);
+                });
+            });
+            
+            console.log('✅ Simple Enhanced Chat Integration Ready');
+        }
+    } catch (error) {
+        console.log('⚠️ Enhanced chat failed, app continues normally:', error.message);
+    }
+}, 2000);
+</script>
     <style>
         /* MOBILE-FIRST CSS VARIABLES */
         :root {
