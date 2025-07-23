@@ -407,4 +407,6 @@ class DriveStorage {
 }
 
 // Create global instance
-const driveStorage = new DriveStorage();
+if (!window.driveStorage) {
+    window.driveStorage = new DriveStorage();
+}
