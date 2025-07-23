@@ -1,5 +1,5 @@
 // LifeStream Google Authentication
-// Customer-first approach: Easy login, secure storage in user's Drive
+// Mobile PWA optimized with customer-first approach
 
 class GoogleAuth {
     constructor() {
@@ -13,15 +13,18 @@ class GoogleAuth {
         this.gapi = null;
         this.currentUser = null;
         this.isSignedIn = false;
+        this.isMobile = window.innerWidth < 768;
     }
 
     // Initialize Google API
     async init() {
         try {
+            console.log('🚀 Initializing mobile-optimized Google Auth...');
+            
             // Load Google API
             await this.loadGoogleAPI();
             
-            // Initialize gapi
+            // Initialize gapi with mobile optimizations
             await gapi.load('auth2:client:drive', async () => {
                 await gapi.client.init({
                     clientId: this.CLIENT_ID,
@@ -37,22 +40,23 @@ class GoogleAuth {
                 
                 if (this.isSignedIn) {
                     this.currentUser = authInstance.currentUser.get();
-                    this.onSignInSuccess();
+                    await this.onSignInSuccess();
                 }
 
                 // Listen for sign-in state changes
                 authInstance.isSignedIn.listen(this.updateSigninStatus.bind(this));
             });
 
-            console.log('✅ Google Auth initialized successfully');
+            console.log('✅ Mobile Google Auth initialized successfully');
             return true;
         } catch (error) {
             console.error('❌ Google Auth initialization failed:', error);
+            this.showError('Authentication system unavailable. Please refresh the page.');
             return false;
         }
     }
 
-    // Load Google API dynamically
+    // Load Google API dynamically with mobile optimizations
     loadGoogleAPI() {
         return new Promise((resolve, reject) => {
             if (window.gapi) {
@@ -63,27 +67,67 @@ class GoogleAuth {
             const script = document.createElement('script');
             script.src = 'https://apis.google.com/js/api.js';
             script.onload = resolve;
-            script.onerror = reject;
+            script.onerror = () => {
+                console.error('Failed to load Google API script');
+                reject(new Error('Google API script failed to load'));
+            };
+            
+            // Add loading timeout for mobile networks
+            const timeout = setTimeout(() => {
+                reject(new Error('Google API script load timeout'));
+            }, 15000);
+            
+            script.onload = () => {
+                clearTimeout(timeout);
+                resolve();
+            };
+            
             document.head.appendChild(script);
         });
     }
 
-    // Handle sign-in
+    // Handle sign-in with mobile optimizations
     async signIn() {
         try {
+            console.log('👤 Starting mobile-optimized sign-in...');
+            
+            // Show loading state
+            this.updateSignInButton(true);
+            
             const authInstance = gapi.auth2.getAuthInstance();
-            const user = await authInstance.signIn();
+            
+            // Mobile-optimized sign-in options
+            const signInOptions = {
+                prompt: 'select_account'  // Always show account picker on mobile
+            };
+            
+            const user = await authInstance.signIn(signInOptions);
             
             this.currentUser = user;
             this.isSignedIn = true;
             
-            console.log('✅ User signed in successfully');
-            this.onSignInSuccess();
+            console.log('✅ Mobile sign-in successful');
+            await this.onSignInSuccess();
+            
+            // Haptic feedback on mobile
+            if (this.isMobile && navigator.vibrate) {
+                navigator.vibrate([50, 30, 50]);
+            }
             
             return true;
         } catch (error) {
-            console.error('❌ Sign-in failed:', error);
-            this.showError('Sign-in failed. Please try again.');
+            console.error('❌ Mobile sign-in failed:', error);
+            this.updateSignInButton(false);
+            
+            // Mobile-friendly error messages
+            if (error.error === 'popup_closed_by_user') {
+                this.showError('Sign-in was cancelled. Please try again.');
+            } else if (error.error === 'popup_blocked_by_browser') {
+                this.showError('Pop-up blocked. Please allow pop-ups and try again.');
+            } else {
+                this.showError('Sign-in failed. Please check your connection and try again.');
+            }
+            
             return false;
         }
     }
@@ -91,39 +135,56 @@ class GoogleAuth {
     // Handle sign-out
     async signOut() {
         try {
+            console.log('👋 Starting sign-out...');
+            
             const authInstance = gapi.auth2.getAuthInstance();
             await authInstance.signOut();
             
             this.currentUser = null;
             this.isSignedIn = false;
             
-            console.log('✅ User signed out successfully');
+            console.log('✅ Sign-out successful');
             this.onSignOut();
+            
+            // Mobile feedback
+            if (this.isMobile && navigator.vibrate) {
+                navigator.vibrate(100);
+            }
+            
+            // Show success message
+            this.showStatusMessage('👋 Signed out successfully', 'success');
             
             return true;
         } catch (error) {
             console.error('❌ Sign-out failed:', error);
+            this.showError('Sign-out failed. Please refresh the page.');
             return false;
         }
     }
 
-    // Get user info
+    // Get user info with mobile optimizations
     getUserInfo() {
         if (!this.currentUser) return null;
 
-        const profile = this.currentUser.getBasicProfile();
-        return {
-            id: profile.getId(),
-            email: profile.getEmail(),
-            name: profile.getName(),
-            picture: profile.getImageUrl(),
-            firstName: profile.getGivenName(),
-            lastName: profile.getFamilyName()
-        };
+        try {
+            const profile = this.currentUser.getBasicProfile();
+            return {
+                id: profile.getId(),
+                email: profile.getEmail(),
+                name: profile.getName(),
+                picture: profile.getImageUrl(),
+                firstName: profile.getGivenName(),
+                lastName: profile.getFamilyName()
+            };
+        } catch (error) {
+            console.error('❌ Failed to get user info:', error);
+            return null;
+        }
     }
 
     // Update sign-in status
     updateSigninStatus(isSignedIn) {
+        console.log('🔄 Sign-in status changed:', isSignedIn);
         this.isSignedIn = isSignedIn;
         
         if (isSignedIn) {
@@ -135,20 +196,29 @@ class GoogleAuth {
         }
     }
 
-    // Success callback - customize this!
+    // Success callback with mobile PWA integration
     async onSignInSuccess() {
         const userInfo = this.getUserInfo();
-        console.log('👤 User info:', userInfo);
+        console.log('👤 User authenticated:', userInfo?.email);
         
-        // Hide login UI, show main app
+        // Update UI immediately
         this.updateUI(true);
+        
+        // Show welcome message
+        this.showStatusMessage(`👋 Welcome ${userInfo?.firstName || 'back'}!`, 'success');
         
         // Initialize Drive storage
         await this.initializeDriveStorage();
         
         // Initialize main app after authentication
         if (typeof initializeMainApp === 'function') {
+            console.log('🎯 Initializing main app...');
             initializeMainApp();
+        }
+        
+        // Mobile PWA: Hide loading screen if still visible
+        if (typeof hideLoadingScreen === 'function') {
+            setTimeout(hideLoadingScreen, 500);
         }
     }
 
@@ -158,86 +228,12 @@ class GoogleAuth {
         
         // Show login UI, hide main app
         this.updateUI(false);
+        
+        // Clear any cached data
+        this.clearCachedData();
     }
 
-    // Update UI based on auth state
+    // Update UI with mobile optimizations
     updateUI(isSignedIn) {
         const loginSection = document.getElementById('login-section');
         const mainApp = document.getElementById('main-app');
-        const userInfo = document.getElementById('user-info');
-
-        if (isSignedIn) {
-            // User is signed in
-            if (loginSection) loginSection.style.display = 'none';
-            if (mainApp) mainApp.style.display = 'block';
-            
-            // Show user info
-            if (userInfo) {
-                const user = this.getUserInfo();
-                userInfo.innerHTML = `
-                    <div class="user-profile">
-                        <img src="${user.picture}" alt="${user.name}" class="user-avatar">
-                        <span class="user-name">${user.name}</span>
-                        <button onclick="googleAuth.signOut()" class="sign-out-btn">Sign Out</button>
-                    </div>
-                `;
-            }
-        } else {
-            // User is signed out
-            if (loginSection) loginSection.style.display = 'block';
-            if (mainApp) mainApp.style.display = 'none';
-            if (userInfo) userInfo.innerHTML = '';
-        }
-    }
-
-    // Initialize Drive storage
-    async initializeDriveStorage() {
-        try {
-            console.log('📁 Initializing Drive storage...');
-            
-            // Initialize drive storage
-            if (typeof driveStorage !== 'undefined') {
-                const success = await driveStorage.init();
-                if (success) {
-                    console.log('✅ Drive storage ready!');
-                    
-                    // Show success message to user
-                    if (typeof showStatusMessage === 'function') {
-                        showStatusMessage('✅ Your personal Google Drive storage is ready!', 'success');
-                    }
-                } else {
-                    console.warn('⚠️ Drive storage initialization failed');
-                    if (typeof showStatusMessage === 'function') {
-                        showStatusMessage('⚠️ Drive storage unavailable, using local storage', 'error');
-                    }
-                }
-            } else {
-                console.warn('⚠️ DriveStorage class not found');
-            }
-            
-        } catch (error) {
-            console.error('❌ Drive storage initialization error:', error);
-            if (typeof showStatusMessage === 'function') {
-                showStatusMessage('⚠️ Drive storage unavailable, using local storage', 'error');
-            }
-        }
-    }
-
-    // Show error message
-    showError(message) {
-        console.error('⚠️ Error:', message);
-        if (typeof showStatusMessage === 'function') {
-            showStatusMessage(message, 'error');
-        } else {
-            alert(message);
-        }
-    }
-}
-
-// Create global instance
-const googleAuth = new GoogleAuth();
-
-// Auto-initialize when page loads
-document.addEventListener('DOMContentLoaded', () => {
-    googleAuth.init();
-});
