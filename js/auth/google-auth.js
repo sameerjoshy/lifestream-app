@@ -1,63 +1,50 @@
-// LifeStream Google Authentication
-// Mobile PWA optimized with customer-first approach
-
+// Google Authentication for LifeStream
 class GoogleAuth {
     constructor() {
-        this.CLIENT_ID = '883206169436-4b09c73o9o0hci05jprlll572d7c6msq.apps.googleusercontent.com';
-        this.SCOPES = [
-            'https://www.googleapis.com/auth/drive.file',
-            'https://www.googleapis.com/auth/userinfo.email',
-            'https://www.googleapis.com/auth/userinfo.profile'
-        ].join(' ');
-        
-        this.gapi = null;
-        this.currentUser = null;
         this.isSignedIn = false;
-        this.isMobile = window.innerWidth < 768;
+        this.currentUser = null;
+        this.gapi = null;
+        this.init();
     }
 
-    // Initialize Google API
     async init() {
         try {
-            console.log('🚀 Initializing mobile-optimized Google Auth...');
+            console.log('🔐 Initializing Google Auth...');
             
             // Load Google API
             await this.loadGoogleAPI();
             
-            // Initialize gapi with mobile optimizations
-            await gapi.load('auth2:client:drive', async () => {
-                await gapi.client.init({
-                    clientId: this.CLIENT_ID,
-                    scope: this.SCOPES,
-                    discoveryDocs: [
-                        'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'
-                    ]
+            // Initialize GAPI
+            await new Promise((resolve, reject) => {
+                gapi.load('auth2:client:drive', {
+                    callback: resolve,
+                    onerror: reject
                 });
-
-                // Set up auth listener
-                const authInstance = gapi.auth2.getAuthInstance();
-                this.isSignedIn = authInstance.isSignedIn.get();
-                
-                if (this.isSignedIn) {
-                    this.currentUser = authInstance.currentUser.get();
-                    await this.onSignInSuccess();
-                }
-
-                // Listen for sign-in state changes
-                authInstance.isSignedIn.listen(this.updateSigninStatus.bind(this));
             });
 
-            console.log('✅ Mobile Google Auth initialized successfully');
-            return true;
+            // Initialize auth2
+            const authInstance = await gapi.auth2.init({
+                client_id: 'YOUR_CLIENT_ID_HERE', // Replace with your actual client ID
+                scope: 'https://www.googleapis.com/auth/drive.file profile email'
+            });
+
+            this.authInstance = authInstance;
+            this.isSignedIn = authInstance.isSignedIn.get();
+            
+            if (this.isSignedIn) {
+                this.currentUser = authInstance.currentUser.get();
+                this.handleSignIn();
+            }
+
+            console.log('✅ Google Auth initialized');
+            
         } catch (error) {
-            console.error('❌ Google Auth initialization failed:', error);
-            this.showError('Authentication system unavailable. Please refresh the page.');
-            return false;
+            console.warn('⚠️ Google Auth initialization failed:', error);
+            this.setupDemoMode();
         }
     }
 
-    // Load Google API dynamically with mobile optimizations
-    loadGoogleAPI() {
+    async loadGoogleAPI() {
         return new Promise((resolve, reject) => {
             if (window.gapi) {
                 resolve();
@@ -67,234 +54,147 @@ class GoogleAuth {
             const script = document.createElement('script');
             script.src = 'https://apis.google.com/js/api.js';
             script.onload = resolve;
-            script.onerror = () => {
-                console.error('Failed to load Google API script');
-                reject(new Error('Google API script failed to load'));
-            };
-            
-            // Add loading timeout for mobile networks
-            const timeout = setTimeout(() => {
-                reject(new Error('Google API script load timeout'));
-            }, 15000);
-            
-            script.onload = () => {
-                clearTimeout(timeout);
-                resolve();
-            };
-            
+            script.onerror = reject;
             document.head.appendChild(script);
         });
     }
 
-    // Handle sign-in with mobile optimizations
+    setupDemoMode() {
+        console.log('🎭 Setting up demo mode...');
+        // Demo mode for testing without Google API
+        this.isDemoMode = true;
+        setTimeout(() => {
+            this.handleDemoSignIn();
+        }, 1000);
+    }
+
     async signIn() {
         try {
-            console.log('👤 Starting mobile-optimized sign-in...');
-            
-            // Show loading state
-            this.updateSignInButton(true);
-            
-            const authInstance = gapi.auth2.getAuthInstance();
-            
-            // Mobile-optimized sign-in options
-            const signInOptions = {
-                prompt: 'select_account'  // Always show account picker on mobile
-            };
-            
-            const user = await authInstance.signIn(signInOptions);
-            
+            if (this.isDemoMode) {
+                this.handleDemoSignIn();
+                return;
+            }
+
+            console.log('🔐 Starting Google sign-in...');
+            const user = await this.authInstance.signIn();
             this.currentUser = user;
             this.isSignedIn = true;
+            this.handleSignIn();
             
-            console.log('✅ Mobile sign-in successful');
-            await this.onSignInSuccess();
-            
-            // Haptic feedback on mobile
-            if (this.isMobile && navigator.vibrate) {
-                navigator.vibrate([50, 30, 50]);
-            }
-            
-            return true;
         } catch (error) {
-            console.error('❌ Mobile sign-in failed:', error);
-            this.updateSignInButton(false);
-            
-            // Mobile-friendly error messages
-            if (error.error === 'popup_closed_by_user') {
-                this.showError('Sign-in was cancelled. Please try again.');
-            } else if (error.error === 'popup_blocked_by_browser') {
-                this.showError('Pop-up blocked. Please allow pop-ups and try again.');
-            } else {
-                this.showError('Sign-in failed. Please check your connection and try again.');
-            }
-            
-            return false;
+            console.warn('Sign-in error:', error);
+            showStatusMessage('⚠️ Sign-in failed, starting demo mode', 'error');
+            this.handleDemoSignIn();
         }
     }
 
-    // Handle sign-out
+    handleSignIn() {
+        const profile = this.currentUser.getBasicProfile();
+        const userName = profile.getName();
+        const userEmail = profile.getEmail();
+        const userImage = profile.getImageUrl();
+
+        console.log('✅ User signed in:', userName);
+        
+        // Update UI
+        this.updateUserInterface(userName, userEmail, userImage);
+        
+        // Hide login, show main app
+        document.getElementById('login-section').style.display = 'none';
+        document.getElementById('main-app').style.display = 'block';
+        
+        // Initialize main app
+        initializeMainApp();
+        
+        showStatusMessage(`🎉 Welcome ${userName}!`, 'success');
+    }
+
+    handleDemoSignIn() {
+        console.log('🎭 Demo mode sign-in');
+        
+        const demoUser = {
+            name: 'Demo User',
+            email: 'demo@lifestream.app',
+            image: 'https://via.placeholder.com/40x40/00d4ff/ffffff?text=D'
+        };
+
+        this.updateUserInterface(demoUser.name, demoUser.email, demoUser.image);
+        
+        // Hide login, show main app
+        document.getElementById('login-section').style.display = 'none';
+        document.getElementById('main-app').style.display = 'block';
+        
+        // Initialize main app
+        initializeMainApp();
+        
+        showStatusMessage('🎭 Demo Mode: Your data will be stored locally', 'success');
+    }
+
+    updateUserInterface(name, email, imageUrl) {
+        // Update user name
+        const userNameEl = document.querySelector('.user-name');
+        if (userNameEl) {
+            userNameEl.textContent = name;
+        }
+
+        // Add user avatar if it doesn't exist
+        const userProfileLeft = document.querySelector('.user-profile-left');
+        if (userProfileLeft && !userProfileLeft.querySelector('.user-avatar')) {
+            const avatar = document.createElement('img');
+            avatar.src = imageUrl;
+            avatar.alt = name;
+            avatar.className = 'user-avatar';
+            userProfileLeft.insertBefore(avatar, userProfileLeft.firstChild);
+        }
+
+        // Add sign out button
+        this.addSignOutButton();
+    }
+
+    addSignOutButton() {
+        const userInfo = document.getElementById('user-info');
+        if (userInfo && !userInfo.querySelector('.sign-out-btn')) {
+            const signOutBtn = document.createElement('button');
+            signOutBtn.className = 'sign-out-btn';
+            signOutBtn.textContent = 'Sign Out';
+            signOutBtn.onclick = () => this.signOut();
+            
+            userInfo.appendChild(signOutBtn);
+        }
+    }
+
     async signOut() {
         try {
-            console.log('👋 Starting sign-out...');
+            if (this.authInstance && !this.isDemoMode) {
+                await this.authInstance.signOut();
+            }
             
-            const authInstance = gapi.auth2.getAuthInstance();
-            await authInstance.signOut();
-            
-            this.currentUser = null;
             this.isSignedIn = false;
-            
-            console.log('✅ Sign-out successful');
-            this.onSignOut();
-            
-            // Mobile feedback
-            if (this.isMobile && navigator.vibrate) {
-                navigator.vibrate(100);
-            }
-            
-            // Show success message
-            this.showStatusMessage('👋 Signed out successfully', 'success');
-            
-            return true;
-        } catch (error) {
-            console.error('❌ Sign-out failed:', error);
-            this.showError('Sign-out failed. Please refresh the page.');
-            return false;
-        }
-    }
-
-    // Get user info with mobile optimizations
-    getUserInfo() {
-        if (!this.currentUser) return null;
-
-        try {
-            const profile = this.currentUser.getBasicProfile();
-            return {
-                id: profile.getId(),
-                email: profile.getEmail(),
-                name: profile.getName(),
-                picture: profile.getImageUrl(),
-                firstName: profile.getGivenName(),
-                lastName: profile.getFamilyName()
-            };
-        } catch (error) {
-            console.error('❌ Failed to get user info:', error);
-            return null;
-        }
-    }
-
-    // Update sign-in status
-    updateSigninStatus(isSignedIn) {
-        console.log('🔄 Sign-in status changed:', isSignedIn);
-        this.isSignedIn = isSignedIn;
-        
-        if (isSignedIn) {
-            this.currentUser = gapi.auth2.getAuthInstance().currentUser.get();
-            this.onSignInSuccess();
-        } else {
             this.currentUser = null;
-            this.onSignOut();
-        }
-    }
-
-    // Success callback with mobile PWA integration
-    async onSignInSuccess() {
-        const userInfo = this.getUserInfo();
-        console.log('👤 User authenticated:', userInfo?.email);
-        
-        // Update UI immediately
-        this.updateUI(true);
-        
-        // Show welcome message
-        this.showStatusMessage(`👋 Welcome ${userInfo?.firstName || 'back'}!`, 'success');
-        
-        // Initialize Drive storage
-        await this.initializeDriveStorage();
-        
-        // Initialize main app after authentication
-        if (typeof initializeMainApp === 'function') {
-            console.log('🎯 Initializing main app...');
-            initializeMainApp();
-        }
-        
-        // Mobile PWA: Hide loading screen if still visible
-        if (typeof hideLoadingScreen === 'function') {
-            setTimeout(hideLoadingScreen, 500);
-        }
-    }
-
-    // Sign out callback
-    onSignOut() {
-        console.log('👋 User signed out');
-        
-        // Show login UI, hide main app
-        this.updateUI(false);
-        
-        // Clear any cached data
-        this.clearCachedData();
-    }
-
-    // Update UI with mobile optimizations
-    updateUI(isSignedIn) {
-        const loginSection = document.getElementById('login-section');
-        const mainApp = document.getElementById('main-app');
-        if (isSignedIn) {
-            if (loginSection) loginSection.style.display = 'none';
-            if (mainApp) mainApp.style.display = 'block';
-        } else {
-            if (loginSection) loginSection.style.display = 'block';
-            if (mainApp) mainApp.style.display = 'none';
-        }
-    }
-
-    // Initialize Drive storage
-    async initializeDriveStorage() {
-        try {
-            if (window.driveStorage) {
-                await window.driveStorage.init();
-                console.log('✅ Drive storage initialized');
-            }
+            
+            // Show login, hide main app
+            document.getElementById('main-app').style.display = 'none';
+            document.getElementById('login-section').style.display = 'block';
+            
+            showStatusMessage('👋 Signed out successfully', 'success');
+            
         } catch (error) {
-            console.warn('Drive storage initialization failed:', error);
+            console.warn('Sign-out error:', error);
         }
     }
 
-    // Update sign-in button state
-    updateSignInButton(loading) {
-        const signInBtn = document.getElementById('google-signin-btn');
-        if (signInBtn) {
-            signInBtn.disabled = loading;
-            signInBtn.textContent = loading ? 'Signing in...' : 'Sign in with Google';
+    getAccessToken() {
+        if (this.isDemoMode) {
+            return 'demo-token';
         }
-    }
-
-    // Show error message
-    showError(message) {
-        console.error('Auth Error:', message);
-        if (typeof showStatusMessage === 'function') {
-            showStatusMessage(message, 'error');
+        
+        if (this.currentUser) {
+            return this.currentUser.getAuthResponse().access_token;
         }
-    }
-
-    // Show status message
-    showStatusMessage(message, type) {
-        console.log('Status:', message);
-        if (typeof showStatusMessage === 'function') {
-            showStatusMessage(message, type);
-        }
-    }
-
-    // Clear cached data
-    clearCachedData() {
-        localStorage.removeItem('lifestream_activities');
-        localStorage.removeItem('lifestream_stats');
-        localStorage.removeItem('lifestream_goals');
+        return null;
     }
 }
 
-// Create global instance
+// Initialize Google Auth
 const googleAuth = new GoogleAuth();
-
-// Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    googleAuth.init();
-});
+console.log('🔐 Google Auth module loaded');
