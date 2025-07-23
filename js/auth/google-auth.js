@@ -136,7 +136,7 @@ class GoogleAuth {
     }
 
     // Success callback - customize this!
-    onSignInSuccess() {
+    async onSignInSuccess() {
         const userInfo = this.getUserInfo();
         console.log('👤 User info:', userInfo);
         
@@ -144,7 +144,12 @@ class GoogleAuth {
         this.updateUI(true);
         
         // Initialize Drive storage
-        this.initializeDriveStorage();
+        await this.initializeDriveStorage();
+        
+        // Initialize main app after authentication
+        if (typeof initializeMainApp === 'function') {
+            initializeMainApp();
+        }
     }
 
     // Sign out callback
@@ -185,17 +190,47 @@ class GoogleAuth {
         }
     }
 
-    // Initialize Drive storage (placeholder for next phase)
+    // Initialize Drive storage
     async initializeDriveStorage() {
-        console.log('📁 Initializing Drive storage...');
-        // We'll implement this in the next step!
+        try {
+            console.log('📁 Initializing Drive storage...');
+            
+            // Initialize drive storage
+            if (typeof driveStorage !== 'undefined') {
+                const success = await driveStorage.init();
+                if (success) {
+                    console.log('✅ Drive storage ready!');
+                    
+                    // Show success message to user
+                    if (typeof showStatusMessage === 'function') {
+                        showStatusMessage('✅ Your personal Google Drive storage is ready!', 'success');
+                    }
+                } else {
+                    console.warn('⚠️ Drive storage initialization failed');
+                    if (typeof showStatusMessage === 'function') {
+                        showStatusMessage('⚠️ Drive storage unavailable, using local storage', 'error');
+                    }
+                }
+            } else {
+                console.warn('⚠️ DriveStorage class not found');
+            }
+            
+        } catch (error) {
+            console.error('❌ Drive storage initialization error:', error);
+            if (typeof showStatusMessage === 'function') {
+                showStatusMessage('⚠️ Drive storage unavailable, using local storage', 'error');
+            }
+        }
     }
 
     // Show error message
     showError(message) {
         console.error('⚠️ Error:', message);
-        // You can customize this to show user-friendly errors
-        alert(message);
+        if (typeof showStatusMessage === 'function') {
+            showStatusMessage(message, 'error');
+        } else {
+            alert(message);
+        }
     }
 }
 
