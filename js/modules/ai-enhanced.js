@@ -7,7 +7,7 @@ class LifeStreamAIEnhanced {
     constructor() {
         // API Configuration
         this.apiKey = null; // Will be set during initialization
-        this.apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
+        this.apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
         
         // Conversation & Context
         this.conversationHistory = [];
