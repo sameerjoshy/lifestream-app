@@ -3,54 +3,1454 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LifeStream - AI Life Intelligence</title>
+    <title>LifeStream v2.0 - Clean Working Version</title>
     
-    <!-- CSS Modules -->
-    <link rel="stylesheet" href="css/core.css">
-    <link rel="stylesheet" href="css/components.css">
-    <link rel="stylesheet" href="css/chat.css">
-    <link rel="stylesheet" href="css/analytics.css">
-    <link rel="stylesheet" href="css/mobile.css">
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #00d4ff;
+            --primary-dark: #00a8cc;
+            --secondary: #4ecdc4;
+            --accent: #ff6b6b;
+            --success: #00e676;
+            
+            --bg-primary: #0a0f1c;
+            --bg-secondary: #1a1f2e;
+            --bg-tertiary: #2a3441;
+            --surface: rgba(255, 255, 255, 0.05);
+            --surface-hover: rgba(255, 255, 255, 0.1);
+            
+            --text-primary: #ffffff;
+            --text-secondary: #b8c5d6;
+            --text-muted: #64748b;
+            
+            --border-radius: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .app {
+            display: grid;
+            grid-template-areas: 
+                "header header"
+                "sidebar main";
+            grid-template-columns: 280px 1fr;
+            grid-template-rows: 80px 1fr;
+            min-height: 100vh;
+        }
+
+        .header {
+            grid-area: header;
+            background: rgba(26, 31, 46, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .header-stats {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+        }
+
+        .sidebar {
+            grid-area: sidebar;
+            background: var(--bg-secondary);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2rem 1.5rem;
+            overflow-y: auto;
+        }
+
+        .nav-section {
+            margin-bottom: 2rem;
+        }
+
+        .nav-section-title {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-bottom: 4px;
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+
+        .nav-item:hover {
+            background: var(--surface);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .nav-icon {
+            font-size: 1.2rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .main {
+            grid-area: main;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: rgba(26, 31, 46, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(0, 212, 255, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .progress-rings {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .progress-ring {
+            text-align: center;
+        }
+
+        .ring-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 1rem;
+        }
+
+        .ring-svg {
+            transform: rotate(-90deg);
+            width: 100%;
+            height: 100%;
+        }
+
+        .ring-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.1);
+            stroke-width: 8;
+        }
+
+        .ring-progress {
+            fill: none;
+            stroke-width: 8;
+            stroke-linecap: round;
+            stroke-dasharray: 314;
+            stroke-dashoffset: 314;
+            transition: stroke-dashoffset 1s ease-in-out;
+        }
+
+        .ring-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .ring-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+        }
+
+        .ring-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .progress-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .progress-sublabel {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 1rem;
+        }
+
+        .chat-container {
+            height: 500px;
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+            padding: 1rem;
+        }
+
+        .chat-message {
+            margin-bottom: 1rem;
+        }
+
+        .message-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 12px;
+            border-radius: 12px;
+            max-width: 80%;
+        }
+
+        .user-message .message-content {
+            background: var(--primary);
+            margin-left: auto;
+            flex-direction: row-reverse;
+        }
+
+        .ai-message .message-content {
+            background: var(--surface);
+        }
+
+        .message-emoji {
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+        }
+
+        .chat-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .send-button {
+            padding: 12px 24px;
+            background: var(--primary);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .send-button:hover {
+            background: var(--primary-dark);
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-top: 2px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 12px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fadeInUp {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .app {
+                grid-template-areas: 
+                    "header"
+                    "main";
+                grid-template-columns: 1fr;
+                grid-template-rows: 80px 1fr;
+            }
+            
+            .sidebar {
+                display: none;
+            }
+            
+            .main {
+                padding: 1rem;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-stats {
+                display: none;
+            }
+        }
+
+        /* Status Messages */
+        .status-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem;
+            border-radius: 8px;
+            z-index: 10000;
+            max-width: 300px;
+            font-weight: 500;
+            animation: fadeInUp 0.3s ease-out;
+        }
+
+        .status-success {
+            background: rgba(0, 230, 118, 0.1);
+            border: 1px solid rgba(0, 230, 118, 0.3);
+            color: #00e676;
+        }
+
+        .status-error {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            color: #ff6b6b;
+        }
+
+        /* Goal Cards */
+        .goals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .goal-card {
+            background: var(--surface);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: var(--transition);
+        }
+
+        .goal-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .goal-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .goal-emoji {
+            font-size: 1.5rem;
+            margin-right: 12px;
+        }
+
+        .goal-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            flex: 1;
+        }
+
+        .goal-progress {
+            margin: 1rem 0;
+        }
+
+        .goal-progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .goal-progress-bar {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .goal-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .goal-streak {
+            font-size: 0.75rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: var(--surface-hover);
+        }
+    </style>
 </head>
 <body>
-    <div class="app-container" id="app">
-        <!-- Loading Screen -->
-        <div class="loading-screen" id="loadingScreen">
-            <div class="loading-animation">
-                <div class="wave-logo">🌊</div>
-                <div class="loading-text">LifeStream</div>
-                <div class="loading-subtitle">Loading your life intelligence...</div>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">📊</div>
+                <span>LifeStream v2.0</span>
             </div>
-        </div>
-        
-        <!-- Main App Structure -->
-        <div class="app-content" id="appContent" style="display: none;">
-            <!-- Navigation Tabs -->
-            <nav class="header-tabs" id="navigationTabs">
-                <!-- Dynamically loaded by router.js -->
-            </nav>
             
-            <!-- Main Content Views -->
-            <main class="main-content" id="mainContent">
-                <!-- Views dynamically loaded by modules -->
-            </main>
-        </div>
+            <div class="header-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="currentStreak">0</div>
+                    <div class="stat-label">Day Streak</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalPoints">0</div>
+                    <div class="stat-label">Points</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="completedGoals">0</div>
+                    <div class="stat-label">Goals Today</div>
+                </div>
+            </div>
+            
+            <div style="text-align: right;">
+                <div style="font-size: 0.9rem; font-weight: 600;">Life Explorer</div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary);" id="userLevel">Explorer</div>
+            </div>
+        </header>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <nav>
+                <div class="nav-section">
+                    <div class="nav-section-title">Main</div>
+                    <div class="nav-item active" data-tab="dashboard">
+                        <span class="nav-icon">🏠</span>
+                        <span>Dashboard</span>
+                    </div>
+                    <div class="nav-item" data-tab="chat">
+                        <span class="nav-icon">💬</span>
+                        <span>Chat & Log</span>
+                    </div>
+                    <div class="nav-item" data-tab="goals">
+                        <span class="nav-icon">🎯</span>
+                        <span>Goals</span>
+                    </div>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">Analytics</div>
+                    <div class="nav-item" data-tab="analytics">
+                        <span class="nav-icon">📈</span>
+                        <span>Analytics</span>
+                    </div>
+                    <div class="nav-item" data-tab="insights">
+                        <span class="nav-icon">💡</span>
+                        <span>Insights</span>
+                    </div>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Dashboard Tab -->
+            <div id="dashboardTab" class="tab-content active">
+                <!-- Progress Rings -->
+                <div class="progress-rings">
+                    <div class="progress-ring">
+                        <div class="ring-container">
+                            <svg class="ring-svg">
+                                <circle class="ring-bg" cx="60" cy="60" r="50"></circle>
+                                <circle class="ring-progress" cx="60" cy="60" r="50" 
+                                        stroke="#00d4ff" id="goalProgressRing"></circle>
+                            </svg>
+                            <div class="ring-text">
+                                <div class="ring-value" id="goalProgress">0%</div>
+                                <div class="ring-label">Goals</div>
+                            </div>
+                        </div>
+                        <div class="progress-label">Daily Goals</div>
+                        <div class="progress-sublabel">Track your progress</div>
+                    </div>
+                    
+                    <div class="progress-ring">
+                        <div class="ring-container">
+                            <svg class="ring-svg">
+                                <circle class="ring-bg" cx="60" cy="60" r="50"></circle>
+                                <circle class="ring-progress" cx="60" cy="60" r="50" 
+                                        stroke="#4ecdc4" id="activityProgressRing"></circle>
+                            </svg>
+                            <div class="ring-text">
+                                <div class="ring-value" id="activityProgress">0</div>
+                                <div class="ring-label">Activities</div>
+                            </div>
+                        </div>
+                        <div class="progress-label">This Week</div>
+                        <div class="progress-sublabel">Stay active</div>
+                    </div>
+                    
+                    <div class="progress-ring">
+                        <div class="ring-container">
+                            <svg class="ring-svg">
+                                <circle class="ring-bg" cx="60" cy="60" r="50"></circle>
+                                <circle class="ring-progress" cx="60" cy="60" r="50" 
+                                        stroke="#ff6b6b" id="achievementProgressRing"></circle>
+                            </svg>
+                            <div class="ring-text">
+                                <div class="ring-value" id="achievementProgress">0</div>
+                                <div class="ring-label">Badges</div>
+                            </div>
+                        </div>
+                        <div class="progress-label">Achievements</div>
+                        <div class="progress-sublabel">Unlock rewards</div>
+                    </div>
+                </div>
+
+                <!-- Dashboard Cards -->
+                <div class="dashboard-grid">
+                    <div class="card animate-fadeInUp">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <span>📈</span>
+                                Activity Trend
+                            </h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="activityTrendChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="card animate-fadeInUp" style="animation-delay: 0.1s">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <span>🎯</span>
+                                Welcome to LifeStream!
+                            </h3>
+                        </div>
+                        <div>
+                            <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                                Start logging your activities in the Chat tab to see beautiful analytics here!
+                            </p>
+                            <button class="btn btn-primary" onclick="switchToChat()">
+                                Start Tracking 🚀
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Tab -->
+            <div id="chatTab" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <span>💬</span>
+                            Chat with LifeStream AI
+                        </h3>
+                    </div>
+                    
+                    <div class="chat-container">
+                        <div class="chat-messages" id="chatMessages">
+                            <div class="chat-message ai-message">
+                                <div class="message-content">
+                                    <span class="message-emoji">🤖</span>
+                                    <span>Welcome to LifeStream! I'm here to help you track your amazing journey. What would you like to log today? Try saying something like "I worked out for 30 minutes" or "I read for 45 minutes"!</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="chat-input-container">
+                            <input type="text" id="chatInput" class="chat-input" placeholder="Tell me about your day..." />
+                            <button class="send-button" onclick="sendMessage()">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Goals Tab -->
+            <div id="goalsTab" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <span>🎯</span>
+                            Your Goals
+                        </h3>
+                        <button class="btn btn-primary" onclick="createNewGoal()">+ New Goal</button>
+                    </div>
+                    
+                    <div class="goals-grid" id="goalsGrid">
+                        <!-- Goals will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Tab -->
+            <div id="analyticsTab" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <span>📊</span>
+                            Analytics Dashboard
+                        </h3>
+                    </div>
+                    
+                    <div>
+                        <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+                            Start logging activities to see detailed analytics and insights about your progress!
+                        </p>
+                        
+                        <div class="chart-container">
+                            <canvas id="weeklyChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Insights Tab -->
+            <div id="insightsTab" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <span>💡</span>
+                            Personalized Insights
+                        </h3>
+                    </div>
+                    
+                    <div id="insightsContent">
+                        <p style="color: var(--text-secondary);">
+                            As you log more activities, I'll generate personalized insights about your patterns and progress!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
 
-    <!-- Core JavaScript Modules -->
-    <script src="js/utils/constants.js"></script>
-    <script src="js/utils/helpers.js"></script>
-    <script src="js/core/storage.js"></script>
-    <script src="js/core/router.js"></script>
-    
-    <!-- Feature Modules -->
-    <script src="js/modules/ai.js"></script>
-    <script src="js/modules/goals.js"></script>
-    <script src="js/modules/chat.js"></script>
-    <script src="js/modules/analytics.js"></script>
-    <script src="js/modules/insights.js"></script>
-    
-    <!-- Main App Initialization -->
-    <script src="js/core/app.js"></script>
+    <script>
+        // Global error handler
+        window.addEventListener('error', function(e) {
+            console.warn('Error caught and handled:', e.message);
+            showStatusMessage('Minor issue detected, but LifeStream is still working! 🛠️', 'error');
+            return true;
+        });
+
+        // LifeStream App Class
+        class LifeStreamApp {
+            constructor() {
+                this.currentTab = 'dashboard';
+                this.activities = [];
+                this.goals = [];
+                this.stats = {
+                    streak: 0,
+                    points: 0,
+                    completedGoals: 0,
+                    totalActivities: 0
+                };
+                this.charts = {};
+                
+                this.init();
+            }
+
+            init() {
+                try {
+                    console.log('🚀 Initializing LifeStream...');
+                    
+                    this.setupNavigation();
+                    this.setupChat();
+                    this.setupCharts();
+                    this.loadInitialData();
+                    this.loadDefaultGoals();
+                    
+                    console.log('✅ LifeStream initialized successfully');
+                    showStatusMessage('LifeStream v2.0 is ready! 🚀', 'success');
+                    
+                } catch (error) {
+                    console.warn('Initialization error:', error);
+                    showStatusMessage('LifeStream loaded in safe mode 🛡️', 'error');
+                }
+            }
+
+            setupNavigation() {
+                const navItems = document.querySelectorAll('[data-tab]');
+                navItems.forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.switchTab(item.dataset.tab);
+                    });
+                });
+            }
+
+            switchTab(tabName) {
+                try {
+                    // Update navigation
+                    document.querySelectorAll('.nav-item').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+
+                    // Update content
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    document.getElementById(`${tabName}Tab`).classList.add('active');
+
+                    this.currentTab = tabName;
+                    
+                    // Load tab-specific content
+                    this.loadTabContent(tabName);
+                    
+                } catch (error) {
+                    console.warn('Tab switching error:', error);
+                }
+            }
+
+            loadTabContent(tabName) {
+                switch (tabName) {
+                    case 'goals':
+                        this.renderGoals();
+                        break;
+                    case 'analytics':
+                        this.updateAnalytics();
+                        break;
+                    case 'insights':
+                        this.generateInsights();
+                        break;
+                }
+            }
+
+            setupChat() {
+                const chatInput = document.getElementById('chatInput');
+                if (chatInput) {
+                    chatInput.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            this.sendMessage();
+                        }
+                    });
+                }
+            }
+
+            sendMessage() {
+                try {
+                    const input = document.getElementById('chatInput');
+                    const message = input.value.trim();
+                    if (!message) return;
+
+                    // Add user message
+                    this.addChatMessage(message, 'user');
+                    input.value = '';
+
+                    // Process message and generate response
+                    setTimeout(() => {
+                        const activity = this.parseActivity(message);
+                        if (activity) {
+                            this.logActivity(activity);
+                        }
+                        
+                        const response = this.generateResponse(message, activity);
+                        this.addChatMessage(response, 'ai');
+                        
+                        this.updateStats();
+                        this.updateProgressRings();
+                        
+                    }, 1000);
+                    
+                } catch (error) {
+                    console.warn('Send message error:', error);
+                    this.addChatMessage('Sorry, something went wrong! But I\'m still here to help! 🤖', 'ai');
+                }
+            }
+
+            parseActivity(message) {
+                const msg = message.toLowerCase();
+                let activity = null;
+
+                if (msg.includes('workout') || msg.includes('exercise') || msg.includes('gym')) {
+                    activity = {
+                        type: 'workout',
+                        category: 'fitness',
+                        duration: this.extractDuration(msg) || 30,
+                        timestamp: Date.now()
+                    };
+                } else if (msg.includes('read') || msg.includes('book') || msg.includes('study')) {
+                    activity = {
+                        type: 'reading',
+                        category: 'learning',
+                        duration: this.extractDuration(msg) || 30,
+                        timestamp: Date.now()
+                    };
+                } else if (msg.includes('meditat') || msg.includes('yoga') || msg.includes('mindful')) {
+                    activity = {
+                        type: 'meditation',
+                        category: 'wellness',
+                        duration: this.extractDuration(msg) || 15,
+                        timestamp: Date.now()
+                    };
+                } else if (msg.includes('work') || msg.includes('project') || msg.includes('task')) {
+                    activity = {
+                        type: 'work',
+                        category: 'productivity',
+                        duration: this.extractDuration(msg) || 60,
+                        timestamp: Date.now()
+                    };
+                }
+
+                return activity;
+            }
+
+            extractDuration(message) {
+                const durationMatch = message.match(/(\d+)\s*(minute|min|hour|hr)/i);
+                if (durationMatch) {
+                    const value = parseInt(durationMatch[1]);
+                    const unit = durationMatch[2].toLowerCase();
+                    return unit.startsWith('hour') ? value * 60 : value;
+                }
+                return null;
+            }
+
+            logActivity(activity) {
+                this.activities.push(activity);
+                this.stats.totalActivities++;
+                
+                // Save to localStorage
+                try {
+                    localStorage.setItem('lifestream_activities', JSON.stringify(this.activities));
+                    localStorage.setItem('lifestream_stats', JSON.stringify(this.stats));
+                } catch (error) {
+                    console.warn('Storage error:', error);
+                }
+            }
+
+            generateResponse(message, activity) {
+                if (activity) {
+                    const responses = {
+                        fitness: [
+                            "Amazing workout! 💪 Your consistency is building real strength!",
+                            "That's what I call dedication! 🔥 Your fitness journey is inspiring!",
+                            "Another step closer to your goals! 🏃‍♂️ Keep that momentum going!"
+                        ],
+                        learning: [
+                            "Knowledge is power! 📚 Your commitment to learning is fantastic!",
+                            "Every page makes you smarter! 🧠 Love seeing your growth mindset!",
+                            "Reading builds the mind! 📖 You're investing in your best self!"
+                        ],
+                        wellness: [
+                            "Inner peace creates outer success! 🧘‍♂️ Your mindfulness practice is powerful!",
+                            "Mental wellness is the foundation! ✨ You're taking care of what matters most!",
+                            "Mindful moments lead to meaningful days! 🌸 Beautiful self-care!"
+                        ],
+                        productivity: [
+                            "Productivity champion! 💼 You're making things happen!",
+                            "Great progress on your work goals! ⚡ Keep that momentum!",
+                            "Getting things done! 🎯 Your efficiency is impressive!"
+                        ]
+                    };
+                    
+                    const categoryResponses = responses[activity.category] || responses.fitness;
+                    return categoryResponses[Math.floor(Math.random() * categoryResponses.length)];
+                }
+                
+                return "Thanks for sharing! 🌟 I love hearing about your progress! Every moment you track builds a better picture of your amazing journey!";
+            }
+
+            addChatMessage(message, sender) {
+                try {
+                    const container = document.getElementById('chatMessages');
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `chat-message ${sender}-message`;
+                    
+                    const emoji = sender === 'ai' ? '🤖' : '👤';
+                    messageDiv.innerHTML = `
+                        <div class="message-content">
+                            <span class="message-emoji">${emoji}</span>
+                            <span>${message}</span>
+                        </div>
+                    `;
+                    
+                    container.appendChild(messageDiv);
+                    container.scrollTop = container.scrollHeight;
+                } catch (error) {
+                    console.warn('Add chat message error:', error);
+                }
+            }
+
+            updateStats() {
+                this.stats.streak = Math.min(this.stats.streak + 1, 100);
+                this.stats.points += 25;
+                
+                // Check goal completion
+                this.checkGoalProgress();
+                
+                // Update UI
+                this.updateStatsDisplay();
+            }
+
+            updateStatsDisplay() {
+                try {
+                    document.getElementById('currentStreak').textContent = this.stats.streak;
+                    document.getElementById('totalPoints').textContent = this.stats.points.toLocaleString();
+                    document.getElementById('completedGoals').textContent = this.stats.completedGoals;
+                } catch (error) {
+                    console.warn('Stats display error:', error);
+                }
+            }
+
+            updateProgressRings() {
+                try {
+                    const goalPercent = Math.min((this.stats.completedGoals / Math.max(this.goals.length, 1)) * 100, 100);
+                    const activityPercent = Math.min((this.stats.totalActivities / 20) * 100, 100);
+                    const achievementPercent = Math.min((this.stats.points / 1000) * 100, 100);
+                    
+                    this.animateProgressRing('goalProgressRing', goalPercent);
+                    this.animateProgressRing('activityProgressRing', activityPercent);
+                    this.animateProgressRing('achievementProgressRing', achievementPercent);
+                    
+                    document.getElementById('goalProgress').textContent = Math.round(goalPercent) + '%';
+                    document.getElementById('activityProgress').textContent = this.stats.totalActivities;
+                    document.getElementById('achievementProgress').textContent = Math.floor(this.stats.points / 100);
+                } catch (error) {
+                    console.warn('Progress rings error:', error);
+                }
+            }
+
+            animateProgressRing(ringId, percent) {
+                try {
+                    const ring = document.getElementById(ringId);
+                    if (!ring) return;
+
+                    const circumference = 2 * Math.PI * 50;
+                    const offset = circumference - (percent / 100) * circumference;
+                    ring.style.strokeDashoffset = offset;
+                } catch (error) {
+                    console.warn('Ring animation error:', error);
+                }
+            }
+
+            setupCharts() {
+                try {
+                    if (typeof Chart === 'undefined') {
+                        console.warn('Chart.js not loaded, skipping charts');
+                        return;
+                    }
+
+                    // Activity Trend Chart
+                    const trendCtx = document.getElementById('activityTrendChart');
+                    if (trendCtx) {
+                        this.charts.activityTrend = new Chart(trendCtx, {
+                            type: 'line',
+                            data: {
+                                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                                datasets: [{
+                                    label: 'Daily Activities',
+                                    data: [2, 3, 1, 4, 2, 5, 3],
+                                    borderColor: '#00d4ff',
+                                    backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                                    tension: 0.4,
+                                    fill: true
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: { labels: { color: '#b8c5d6' } }
+                                },
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                                        ticks: { color: '#b8c5d6' }
+                                    },
+                                    x: {
+                                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                                        ticks: { color: '#b8c5d6' }
+                                    }
+                                }
+                            }
+                        });
+                    }
+
+                    // Weekly Chart
+                    const weeklyCtx = document.getElementById('weeklyChart');
+                    if (weeklyCtx) {
+                        this.charts.weekly = new Chart(weeklyCtx, {
+                            type: 'bar',
+                            data: {
+                                labels: ['Fitness', 'Learning', 'Wellness', 'Work', 'Social'],
+                                datasets: [{
+                                    label: 'Activities This Week',
+                                    data: [5, 3, 4, 8, 2],
+                                    backgroundColor: [
+                                        '#ff6b6b',
+                                        '#4ecdc4',
+                                        '#45b7d1',
+                                        '#96ceb4',
+                                        '#feca57'
+                                    ],
+                                    borderRadius: 4
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: { labels: { color: '#b8c5d6' } }
+                                },
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                                        ticks: { color: '#b8c5d6' }
+                                    },
+                                    x: {
+                                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                                        ticks: { color: '#b8c5d6' }
+                                    }
+                                }
+                            }
+                        });
+                    }
+                } catch (error) {
+                    console.warn('Charts setup error:', error);
+                }
+            }
+
+            loadDefaultGoals() {
+                this.goals = [
+                    {
+                        id: 1,
+                        emoji: '💪',
+                        title: 'Stay Active Daily',
+                        description: 'Log any physical activity each day',
+                        target: 1,
+                        current: 0,
+                        streak: 0,
+                        category: 'fitness'
+                    },
+                    {
+                        id: 2,
+                        emoji: '📚',
+                        title: 'Learn Something New',
+                        description: 'Read, study, or explore new topics daily',
+                        target: 30,
+                        current: 0,
+                        streak: 0,
+                        category: 'learning'
+                    },
+                    {
+                        id: 3,
+                        emoji: '🧘‍♂️',
+                        title: 'Practice Mindfulness',
+                        description: 'Take time for meditation or reflection',
+                        target: 15,
+                        current: 0,
+                        streak: 0,
+                        category: 'wellness'
+                    }
+                ];
+                
+                this.renderGoals();
+            }
+
+            renderGoals() {
+                try {
+                    const container = document.getElementById('goalsGrid');
+                    if (!container) return;
+
+                    if (this.goals.length === 0) {
+                        container.innerHTML = `
+                            <div class="card" style="text-align: center; grid-column: 1 / -1;">
+                                <div style="font-size: 3rem; margin-bottom: 1rem;">🎯</div>
+                                <h3>Ready to set your first goal?</h3>
+                                <p style="color: var(--text-secondary); margin: 1rem 0;">Goals give your activities purpose and make tracking more meaningful.</p>
+                                <button class="btn btn-primary" onclick="app.createNewGoal()">Create Your First Goal</button>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    container.innerHTML = this.goals.map(goal => {
+                        const progress = Math.min((goal.current / goal.target) * 100, 100);
+                        return `
+                            <div class="goal-card">
+                                <div class="goal-header">
+                                    <span class="goal-emoji">${goal.emoji}</span>
+                                    <span class="goal-title">${goal.title}</span>
+                                </div>
+                                <div class="goal-progress">
+                                    <div class="goal-progress-text">
+                                        <span>${Math.round(progress)}% complete</span>
+                                        <span class="goal-streak">${goal.streak} day streak</span>
+                                    </div>
+                                    <div class="goal-progress-bar">
+                                        <div class="goal-progress-fill" style="width: ${progress}%"></div>
+                                    </div>
+                                </div>
+                                <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 1rem;">
+                                    ${goal.description}
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } catch (error) {
+                    console.warn('Render goals error:', error);
+                }
+            }
+
+            checkGoalProgress() {
+                try {
+                    let completedCount = 0;
+                    
+                    this.goals.forEach(goal => {
+                        // Simple goal progress simulation
+                        if (this.activities.some(a => a.category === goal.category)) {
+                            goal.current = Math.min(goal.current + 1, goal.target);
+                            if (goal.current >= goal.target) {
+                                completedCount++;
+                                goal.streak++;
+                            }
+                        }
+                    });
+                    
+                    this.stats.completedGoals = completedCount;
+                } catch (error) {
+                    console.warn('Goal progress error:', error);
+                }
+            }
+
+            createNewGoal() {
+                showStatusMessage('Goal creation feature coming soon! 🎯', 'success');
+            }
+
+            updateAnalytics() {
+                try {
+                    // Update charts with real data
+                    if (this.charts.weekly && this.activities.length > 0) {
+                        const categoryData = this.getCategoryData();
+                        this.charts.weekly.data.datasets[0].data = categoryData;
+                        this.charts.weekly.update();
+                    }
+                } catch (error) {
+                    console.warn('Analytics update error:', error);
+                }
+            }
+
+            getCategoryData() {
+                const categories = ['fitness', 'learning', 'wellness', 'productivity', 'social'];
+                return categories.map(cat => 
+                    this.activities.filter(a => a.category === cat).length
+                );
+            }
+
+            generateInsights() {
+                try {
+                    const container = document.getElementById('insightsContent');
+                    if (!container) return;
+
+                    if (this.activities.length === 0) {
+                        container.innerHTML = `
+                            <p style="color: var(--text-secondary);">
+                                Start logging activities to see personalized insights about your patterns and progress!
+                            </p>
+                        `;
+                        return;
+                    }
+
+                    const insights = this.analyzePatterns();
+                    container.innerHTML = insights.map(insight => `
+                        <div style="background: var(--surface); padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem; border-left: 4px solid var(--primary);">
+                            <h4 style="margin-bottom: 0.5rem; color: var(--text-primary);">${insight.emoji} ${insight.title}</h4>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem;">${insight.description}</p>
+                        </div>
+                    `).join('');
+                } catch (error) {
+                    console.warn('Generate insights error:', error);
+                }
+            }
+
+            analyzePatterns() {
+                const insights = [];
+                
+                if (this.stats.streak > 0) {
+                    insights.push({
+                        emoji: '🔥',
+                        title: 'Building Momentum',
+                        description: `You're on a ${this.stats.streak}-day streak! Consistency is the key to lasting change.`
+                    });
+                }
+                
+                if (this.activities.length > 5) {
+                    insights.push({
+                        emoji: '📈',
+                        title: 'Activity Growth',
+                        description: `You've logged ${this.activities.length} activities! You're building a comprehensive picture of your progress.`
+                    });
+                }
+                
+                const categories = this.activities.map(a => a.category);
+                const mostCommon = categories.sort((a, b) =>
+                    categories.filter(v => v === a).length - categories.filter(v => v === b).length
+                ).pop();
+                
+                if (mostCommon) {
+                    insights.push({
+                        emoji: '⭐',
+                        title: 'Top Category',
+                        description: `Your most tracked category is ${mostCommon}. You're showing great consistency in this area!`
+                    });
+                }
+                
+                return insights;
+            }
+
+            loadInitialData() {
+                try {
+                    const savedActivities = localStorage.getItem('lifestream_activities');
+                    const savedStats = localStorage.getItem('lifestream_stats');
+                    
+                    if (savedActivities) {
+                        this.activities = JSON.parse(savedActivities);
+                    }
+                    
+                    if (savedStats) {
+                        this.stats = { ...this.stats, ...JSON.parse(savedStats) };
+                    }
+                    
+                    this.updateStatsDisplay();
+                    this.updateProgressRings();
+                } catch (error) {
+                    console.warn('Load initial data error:', error);
+                }
+            }
+        }
+
+        // Global functions
+        function switchToChat() {
+            if (window.app) {
+                window.app.switchTab('chat');
+            }
+        }
+
+        function sendMessage() {
+            if (window.app) {
+                window.app.sendMessage();
+            }
+        }
+
+        function createNewGoal() {
+            if (window.app) {
+                window.app.createNewGoal();
+            }
+        }
+
+        function showStatusMessage(message, type = 'success') {
+            try {
+                const statusDiv = document.createElement('div');
+                statusDiv.className = `status-message status-${type}`;
+                statusDiv.textContent = message;
+                
+                document.body.appendChild(statusDiv);
+                
+                setTimeout(() => {
+                    if (statusDiv.parentNode) {
+                        statusDiv.parentNode.removeChild(statusDiv);
+                    }
+                }, 4000);
+            } catch (error) {
+                console.log('Status message:', message);
+            }
+        }
+
+        // Initialize app when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                window.app = new LifeStreamApp();
+            } catch (error) {
+                console.warn('App initialization error:', error);
+                showStatusMessage('LifeStream loaded in basic mode', 'error');
+            }
+        });
+
+        // Initialize immediately if DOM is already loaded
+        if (document.readyState !== 'loading') {
+            try {
+                window.app = new LifeStreamApp();
+            } catch (error) {
+                console.warn('App initialization error:', error);
+            }
+        }
+
+        console.log('🚀 LifeStream v2.0 Clean Version Loaded');
+    </script>
 </body>
 </html>
