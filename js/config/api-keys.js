@@ -1,0 +1,5 @@
+const API_CONFIG = {
+    GEMINI_API_KEY: 'AIzaSyDZT_EPRBIMrkkaHhH6VUnECgjR2yqKJ0U',
+    ENVIRONMENT: 'development'
+};
+window.LIFESTREAM_CONFIG = API_CONFIG;
