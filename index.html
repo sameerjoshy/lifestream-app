@@ -801,14 +801,14 @@
 
                 // Process message
                 setTimeout(() => {
-                    const activity = parseActivity(message);
-                    if (activity) {
-                        logActivity(activity);
+                    const entry = parseActivity(message);
+                    if (entry) {
+                        logActivity(entry);
                         updateDisplay();
                         saveData();
                     }
                     
-                    const response = generateResponse(message, activity);
+                    const response = generateResponse(message, entry);
                     addChatMessage(response, 'ai');
                 }, 800 + Math.random() * 400);
                 
@@ -821,7 +821,10 @@
         function parseActivity(message) {
             const msg = message.toLowerCase();
             let activity = null;
+            let mood = null;
+            let emotionalState = null;
 
+            // ACTIVITY DETECTION
             if (msg.includes('workout') || msg.includes('exercise') || msg.includes('gym') || msg.includes('run')) {
                 activity = { type: 'workout', category: 'fitness', points: 25 };
             } else if (msg.includes('read') || msg.includes('book') || msg.includes('study') || msg.includes('learn')) {
@@ -834,12 +837,74 @@
                 activity = { type: 'cardio', category: 'fitness', points: 15 };
             }
 
-            if (activity) {
-                activity.timestamp = Date.now();
-                activity.duration = extractDuration(msg) || 30;
+            // MOOD DETECTION
+            if (msg.includes('great') || msg.includes('amazing') || msg.includes('fantastic') || msg.includes('wonderful')) {
+                mood = { level: 'great', score: 5, category: 'positive' };
+            } else if (msg.includes('good') || msg.includes('nice') || msg.includes('happy') || msg.includes('pleased')) {
+                mood = { level: 'good', score: 4, category: 'positive' };
+            } else if (msg.includes('okay') || msg.includes('fine') || msg.includes('alright') || msg.includes('decent')) {
+                mood = { level: 'okay', score: 3, category: 'neutral' };
+            } else if (msg.includes('tired') || msg.includes('exhausted') || msg.includes('drained') || msg.includes('worn out')) {
+                mood = { level: 'tired', score: 2, category: 'low-energy' };
+            } else if (msg.includes('stressed') || msg.includes('anxious') || msg.includes('overwhelmed') || msg.includes('pressure')) {
+                mood = { level: 'stressed', score: 2, category: 'challenging' };
+            } else if (msg.includes('sad') || msg.includes('down') || msg.includes('low') || msg.includes('disappointed')) {
+                mood = { level: 'sad', score: 1, category: 'challenging' };
             }
 
-            return activity;
+            // EMOTIONAL STATE DETECTION
+            if (msg.includes('excited') || msg.includes('thrilled') || msg.includes('pumped') || msg.includes('energized')) {
+                emotionalState = { state: 'excited', intensity: 'high', category: 'energetic' };
+            } else if (msg.includes('grateful') || msg.includes('thankful') || msg.includes('blessed') || msg.includes('appreciat')) {
+                emotionalState = { state: 'grateful', intensity: 'warm', category: 'appreciative' };
+            } else if (msg.includes('motivated') || msg.includes('inspired') || msg.includes('driven') || msg.includes('focused')) {
+                emotionalState = { state: 'motivated', intensity: 'strong', category: 'purposeful' };
+            } else if (msg.includes('peaceful') || msg.includes('calm') || msg.includes('serene') || msg.includes('tranquil')) {
+                emotionalState = { state: 'peaceful', intensity: 'gentle', category: 'serene' };
+            } else if (msg.includes('confident') || msg.includes('strong') || msg.includes('powerful') || msg.includes('capable')) {
+                emotionalState = { state: 'confident', intensity: 'solid', category: 'empowered' };
+            } else if (msg.includes('creative') || msg.includes('inspired') || msg.includes('imaginative') || msg.includes('artistic')) {
+                emotionalState = { state: 'creative', intensity: 'flowing', category: 'expressive' };
+            }
+
+            // CONTEXTUAL MOOD DETECTION
+            if (msg.includes('perfect start') || msg.includes('great day') || msg.includes('beautiful day')) {
+                mood = mood || { level: 'great', score: 5, category: 'positive' };
+                emotionalState = emotionalState || { state: 'optimistic', intensity: 'bright', category: 'hopeful' };
+            }
+
+            if (msg.includes('feeling') && (msg.includes('great') || msg.includes('good') || msg.includes('amazing'))) {
+                mood = mood || { level: 'great', score: 5, category: 'positive' };
+            }
+
+            // Create comprehensive entry
+            let entry = {
+                timestamp: Date.now(),
+                type: 'mixed',
+                hasActivity: !!activity,
+                hasMood: !!mood,
+                hasEmotion: !!emotionalState
+            };
+
+            if (activity) {
+                entry.activity = activity;
+                entry.activity.timestamp = Date.now();
+                entry.activity.duration = extractDuration(msg) || 30;
+            }
+
+            if (mood) {
+                entry.mood = mood;
+                entry.mood.timestamp = Date.now();
+                entry.mood.context = 'daily_check_in';
+            }
+
+            if (emotionalState) {
+                entry.emotionalState = emotionalState;
+                entry.emotionalState.timestamp = Date.now();
+                entry.emotionalState.trigger = 'self_reflection';
+            }
+
+            return entry.hasActivity || entry.hasMood || entry.hasEmotion ? entry : null;
         }
 
         function extractDuration(message) {
@@ -852,10 +917,29 @@
             return null;
         }
 
-        function logActivity(activity) {
-            appState.activities.push(activity);
-            appState.stats.totalActivities++;
-            appState.stats.points += activity.points;
+        function logActivity(entry) {
+            appState.activities.push(entry);
+            
+            // Track different types of entries
+            if (entry.hasActivity) {
+                appState.stats.totalActivities++;
+                appState.stats.points += entry.activity.points;
+            }
+            
+            if (entry.hasMood) {
+                if (!appState.stats.moodEntries) appState.stats.moodEntries = 0;
+                appState.stats.moodEntries++;
+                
+                // Track mood trends
+                if (!appState.stats.moodAverage) appState.stats.moodAverage = 0;
+                appState.stats.moodAverage = ((appState.stats.moodAverage * (appState.stats.moodEntries - 1)) + entry.mood.score) / appState.stats.moodEntries;
+            }
+            
+            if (entry.hasEmotion) {
+                if (!appState.stats.emotionalEntries) appState.stats.emotionalEntries = 0;
+                appState.stats.emotionalEntries++;
+            }
+            
             appState.stats.streak = Math.min(appState.stats.streak + 1, 100);
         }
 
@@ -1064,15 +1148,17 @@
             const testMessages = [
                 "I worked out for 45 minutes today!",
                 "Just finished reading for 30 minutes",
-                "Meditated for 15 minutes this morning",
-                "Worked on my project for 2 hours"
+                "Feeling great and excited about today!",
+                "Meditated for 15 minutes this morning - feeling peaceful",
+                "Stressed about work but grateful for my team",
+                "Had an amazing creative session - feeling inspired!"
             ];
             
             testMessages.forEach((msg, index) => {
                 setTimeout(() => {
                     document.getElementById('chatInput').value = msg;
                     sendMessage();
-                }, (index + 1) * 2000);
+                }, (index + 1) * 3000);
             });
         };
 
