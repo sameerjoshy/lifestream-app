@@ -2,15 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LifeStream - AI Life Tracker</title>
-    
-    <!-- PWA Meta Tags -->
-    <meta name="description" content="Your AI-powered personal assistant">
-    <meta name="theme-color" content="#00d4ff">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeStream - Emotional Intelligence AI</title>
     
     <style>
         :root {
@@ -32,13 +25,11 @@
             
             --border-radius: 12px;
             --transition: all 0.3s ease;
-            
             --spacing-xs: 4px;
             --spacing-sm: 8px;
             --spacing-md: 16px;
             --spacing-lg: 24px;
             --spacing-xl: 32px;
-            
             --font-size-xs: 12px;
             --font-size-sm: 14px;
             --font-size-base: 16px;
@@ -46,7 +37,6 @@
             --font-size-xl: 20px;
             --font-size-2xl: 24px;
             --font-size-3xl: 32px;
-            
             --touch-target: 44px;
         }
 
@@ -65,7 +55,6 @@
             overflow-x: hidden;
         }
 
-        /* LOGIN SCREEN - SHOWS IMMEDIATELY */
         .login-container {
             display: flex;
             justify-content: center;
@@ -87,14 +76,8 @@
         }
 
         @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .login-header h1 {
@@ -126,7 +109,6 @@
             cursor: pointer;
             transition: var(--transition);
             margin: var(--spacing-lg) 0;
-            touch-action: manipulation;
         }
 
         .google-signin-button:hover {
@@ -144,7 +126,6 @@
             padding: 2px;
         }
 
-        /* MAIN APP - HIDDEN INITIALLY */
         .main-app {
             display: none;
             animation: fadeIn 0.5s ease-out;
@@ -159,7 +140,6 @@
             to { opacity: 1; }
         }
 
-        /* USER BAR */
         .user-bar {
             background: rgba(26, 31, 46, 0.95);
             backdrop-filter: blur(20px);
@@ -187,34 +167,11 @@
             color: var(--text-secondary);
         }
 
-        /* MAIN CONTENT */
         .main-content {
             padding: var(--spacing-md);
             min-height: calc(100vh - 120px);
         }
 
-        /* TAB CONTENT */
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-            animation: slideIn 0.3s ease-out;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        /* CARDS */
         .card {
             background: rgba(26, 31, 46, 0.8);
             backdrop-filter: blur(20px);
@@ -248,74 +205,6 @@
             gap: var(--spacing-xs);
         }
 
-        /* PROGRESS RINGS */
-        .progress-rings {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: var(--spacing-lg);
-            margin-bottom: var(--spacing-lg);
-        }
-
-        .progress-ring {
-            text-align: center;
-        }
-
-        .ring-container {
-            position: relative;
-            width: 100px;
-            height: 100px;
-            margin: 0 auto var(--spacing-sm);
-        }
-
-        .ring-visual {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background: conic-gradient(var(--primary) 0deg, var(--primary) 90deg, rgba(255,255,255,0.1) 90deg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            transition: var(--transition);
-        }
-
-        .ring-inner {
-            width: 70%;
-            height: 70%;
-            background: var(--bg-primary);
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .ring-value {
-            font-size: var(--font-size-lg);
-            font-weight: 700;
-            color: var(--text-primary);
-            line-height: 1;
-        }
-
-        .ring-label {
-            font-size: var(--font-size-xs);
-            color: var(--text-secondary);
-            margin-top: 2px;
-        }
-
-        .progress-label {
-            font-size: var(--font-size-sm);
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 2px;
-        }
-
-        .progress-sublabel {
-            font-size: var(--font-size-xs);
-            color: var(--text-secondary);
-        }
-
-        /* CHAT */
         .chat-container {
             height: 400px;
             background: var(--surface);
@@ -338,14 +227,8 @@
         }
 
         @keyframes messageSlide {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .message-content {
@@ -421,76 +304,6 @@
             transform: scale(1.05);
         }
 
-        /* BUTTONS */
-        .btn {
-            padding: var(--spacing-sm) var(--spacing-md);
-            border: none;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            font-weight: 500;
-            transition: var(--transition);
-            min-height: var(--touch-target);
-            font-size: var(--font-size-sm);
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-dark);
-            transform: translateY(-1px);
-        }
-
-        /* MOBILE NAVIGATION */
-        .mobile-nav {
-            background: rgba(26, 31, 46, 0.95);
-            backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding: var(--spacing-xs) 0;
-            display: flex;
-            justify-content: space-around;
-            position: sticky;
-            bottom: 0;
-            z-index: 100;
-        }
-
-        .mobile-nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: var(--spacing-xs);
-            color: var(--text-secondary);
-            text-decoration: none;
-            transition: var(--transition);
-            min-width: var(--touch-target);
-            cursor: pointer;
-        }
-
-        .mobile-nav-item.active {
-            color: var(--primary);
-        }
-
-        .mobile-nav-item:hover {
-            color: var(--text-primary);
-        }
-
-        .mobile-nav-icon {
-            font-size: var(--font-size-lg);
-            margin-bottom: 2px;
-        }
-
-        .mobile-nav-label {
-            font-size: var(--font-size-xs);
-            font-weight: 500;
-        }
-
-        /* STATUS MESSAGES */
         .status-message {
             position: fixed;
             top: var(--spacing-md);
@@ -504,14 +317,8 @@
         }
 
         @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .status-success {
@@ -520,13 +327,7 @@
             color: #00e676;
         }
 
-        .status-error {
-            background: rgba(255, 107, 107, 0.15);
-            border: 1px solid rgba(255, 107, 107, 0.3);
-            color: #ff6b6b;
-        }
-
-        .welcome-message {
+        .welcome-section {
             background: rgba(0, 230, 118, 0.1);
             border: 1px solid rgba(0, 230, 118, 0.3);
             border-radius: var(--border-radius);
@@ -534,29 +335,20 @@
             margin: var(--spacing-lg) 0;
         }
 
-        .welcome-message p {
+        .welcome-section p {
             margin: var(--spacing-xs) 0;
             color: #00e676;
             font-size: var(--font-size-sm);
         }
 
-        /* RESPONSIVE */
-        @media (min-width: 768px) {
-            .progress-rings {
-                grid-template-columns: repeat(3, 1fr);
-            }
-            
-            .login-card {
-                max-width: 500px;
-            }
+        .emoji-indicator {
+            animation: bounce 2s infinite;
         }
 
-        @media (min-width: 1024px) {
-            .main-content {
-                padding: var(--spacing-xl);
-                max-width: 1200px;
-                margin: 0 auto;
-            }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
         }
     </style>
 </head>
@@ -565,17 +357,17 @@
     <div id="login-section" class="login-container">
         <div class="login-card">
             <div class="login-header">
-                <h1>🌊 LifeStream</h1>
-                <p>Your AI-powered personal assistant for tracking life activities</p>
+                <h1>🧠 LifeStream</h1>
+                <p>Emotional Intelligence AI + Life Tracking</p>
             </div>
             
-            <button class="google-signin-button" onclick="startDemo()">
+            <button class="google-signin-button" onclick="startEmotionalAI()">
                 <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" class="google-logo">
-                Start Demo
+                Start Emotional AI Demo
             </button>
             
             <p style="color: #666; font-size: 14px; margin-top: 16px;">
-                🎭 Demo Mode - No login required
+                🧠 Advanced emotional intelligence system ready!
             </p>
         </div>
     </div>
@@ -585,210 +377,99 @@
         <!-- User Bar -->
         <div class="user-bar">
             <div class="user-profile">
-                <div class="user-name">Demo User</div>
-                <div class="storage-status">💾 Demo Mode - Local Storage</div>
+                <div class="user-name">Emotional AI Active</div>
+                <div class="storage-status">🧠 Mood + Activity Tracking</div>
             </div>
         </div>
 
         <!-- Main Content -->
         <div class="main-content">
-            <!-- Dashboard Tab -->
-            <div id="dashboardTab" class="tab-content active">
-                <!-- Progress Rings -->
-                <div class="progress-rings">
-                    <div class="progress-ring">
-                        <div class="ring-container">
-                            <div class="ring-visual" id="goalRing">
-                                <div class="ring-inner">
-                                    <div class="ring-value" id="goalValue">25%</div>
-                                    <div class="ring-label">Goals</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="progress-label">Daily Goals</div>
-                        <div class="progress-sublabel">Track progress</div>
-                    </div>
-                    
-                    <div class="progress-ring">
-                        <div class="ring-container">
-                            <div class="ring-visual" id="activityRing">
-                                <div class="ring-inner">
-                                    <div class="ring-value" id="activityValue">0</div>
-                                    <div class="ring-label">Activities</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="progress-label">This Week</div>
-                        <div class="progress-sublabel">Stay active</div>
-                    </div>
-                    
-                    <div class="progress-ring">
-                        <div class="ring-container">
-                            <div class="ring-visual" id="pointsRing">
-                                <div class="ring-inner">
-                                    <div class="ring-value" id="pointsValue">0</div>
-                                    <div class="ring-label">Points</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="progress-label">Achievements</div>
-                        <div class="progress-sublabel">Earn rewards</div>
-                    </div>
+            <!-- Welcome Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <span class="emoji-indicator">🧠</span>
+                        Emotional Intelligence System
+                    </h3>
                 </div>
-
-                <!-- Welcome Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">
-                            <span>🎯</span>
-                            Welcome to LifeStream!
-                        </h3>
+                <div>
+                    <div class="welcome-section">
+                        <p>🎯 Mood Recognition: Great, Good, Okay, Stressed, Tired, Sad</p>
+                        <p>✨ Emotional States: Excited, Grateful, Motivated, Peaceful, Confident</p>
+                        <p>🤖 Smart Responses: Acknowledges feelings + asks follow-up questions</p>
+                        <p>📊 Emotional Tracking: Points for self-awareness + mood patterns</p>
                     </div>
-                    <div>
-                        <div class="welcome-message">
-                            <p>✅ PWA ready and working!</p>
-                            <p>🤖 AI chat integration active!</p>
-                            <p>📱 Mobile-optimized design!</p>
-                            <p>🚀 Zero loading issues!</p>
-                        </div>
-                        <p style="color: var(--text-secondary); margin-bottom: var(--spacing-md);">
-                            Start logging activities to see beautiful analytics and progress tracking!
-                        </p>
-                        <button class="btn btn-primary" onclick="switchTab('chat')">
-                            Start Tracking 🚀
-                        </button>
-                    </div>
+                    <p style="color: var(--text-secondary); margin-bottom: var(--spacing-md);">
+                        Try: "I'm feeling great today!" or "Excited about this new project!" or "Grateful for this perfect day!"
+                    </p>
                 </div>
             </div>
 
             <!-- Chat Tab -->
-            <div id="chatTab" class="tab-content">
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">
-                            <span>💬</span>
-                            Chat with LifeStream AI
-                        </h3>
-                    </div>
-                    
-                    <div class="chat-container">
-                        <div class="chat-messages" id="chatMessages">
-                            <div class="chat-message ai-message">
-                                <div class="message-content">
-                                    <span class="message-emoji">🤖</span>
-                                    <span>Welcome to LifeStream! I'm here to help track your activities. Tell me what you've been up to today!</span>
-                                </div>
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <span>💬</span>
+                        Chat with Emotional AI
+                    </h3>
+                </div>
+                
+                <div class="chat-container">
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="chat-message ai-message">
+                            <div class="message-content">
+                                <span class="message-emoji">🧠</span>
+                                <span>Welcome! I'm your Emotional Intelligence AI. I can recognize your moods, emotional states, and activities. How are you feeling today? Tell me about your mood and what you've been up to!</span>
                             </div>
                         </div>
-                        
-                        <div class="chat-input-container">
-                            <textarea id="chatInput" class="chat-input" placeholder="Tell me about your day..." rows="1"></textarea>
-                            <button class="send-button" onclick="sendMessage()">📤</button>
-                        </div>
+                    </div>
+                    
+                    <div class="chat-input-container">
+                        <textarea id="chatInput" class="chat-input" placeholder="How are you feeling today?" rows="1"></textarea>
+                        <button class="send-button" onclick="sendEmotionalMessage()">🧠</button>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- Mobile Navigation -->
-        <nav class="mobile-nav">
-            <a class="mobile-nav-item active" onclick="switchTab('dashboard')" data-tab="dashboard">
-                <div class="mobile-nav-icon">🏠</div>
-                <div class="mobile-nav-label">Home</div>
-            </a>
-            <a class="mobile-nav-item" onclick="switchTab('chat')" data-tab="chat">
-                <div class="mobile-nav-icon">💬</div>
-                <div class="mobile-nav-label">Chat</div>
-            </a>
-        </nav>
     </div>
 
     <script>
-        // APP STATE
-        let appState = {
-            currentTab: 'dashboard',
+        // EMOTIONAL INTELLIGENCE SYSTEM v2.0
+        let emotionalState = {
             activities: [],
+            moods: [],
+            emotions: [],
             stats: {
-                totalActivities: 0,
-                points: 0,
-                streak: 0
+                totalEntries: 0,
+                moodAverage: 0,
+                emotionalAwareness: 0,
+                points: 0
             }
         };
 
-        // IMMEDIATE APP START - NO LOADING DELAYS
-        function startDemo() {
-            console.log('🎭 Starting LifeStream Demo...');
+        function startEmotionalAI() {
+            console.log('🧠 Starting Emotional Intelligence AI...');
             
-            // Hide login, show app
             document.getElementById('login-section').style.display = 'none';
             document.getElementById('main-app').classList.add('active');
             
-            // Initialize app
-            initializeApp();
-            
-            // Show success message
-            showStatusMessage('🎭 Demo Mode Active - LifeStream ready!', 'success');
+            setupEmotionalChat();
+            showStatusMessage('🧠 Emotional Intelligence AI Active!', 'success');
         }
 
-        function initializeApp() {
-            console.log('🚀 Initializing LifeStream...');
-            
-            // Setup chat
-            setupChat();
-            
-            // Load saved data
-            loadSavedData();
-            
-            // Update display
-            updateDisplay();
-            
-            console.log('✅ LifeStream initialized successfully');
-        }
-
-        function setupChat() {
+        function setupEmotionalChat() {
             const chatInput = document.getElementById('chatInput');
             if (chatInput) {
                 chatInput.addEventListener('keypress', (e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
-                        sendMessage();
+                        sendEmotionalMessage();
                     }
                 });
-                
-                chatInput.addEventListener('input', () => {
-                    chatInput.style.height = 'auto';
-                    chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
-                });
             }
         }
 
-        function switchTab(tabName) {
-            try {
-                // Update tab content
-                document.querySelectorAll('.tab-content').forEach(content => {
-                    content.classList.remove('active');
-                });
-                document.getElementById(`${tabName}Tab`).classList.add('active');
-
-                // Update navigation
-                document.querySelectorAll('.mobile-nav-item').forEach(nav => {
-                    nav.classList.remove('active');
-                });
-                document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-
-                appState.currentTab = tabName;
-                
-                // Scroll to top on mobile
-                if (window.innerWidth < 768) {
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                }
-                
-            } catch (error) {
-                console.warn('Tab switching error:', error);
-            }
-        }
-
-        function sendMessage() {
+        function sendEmotionalMessage() {
             try {
                 const input = document.getElementById('chatInput');
                 const message = input.value.trim();
@@ -797,189 +478,244 @@
                 // Add user message
                 addChatMessage(message, 'user');
                 input.value = '';
-                input.style.height = 'auto';
 
-                // Process message
+                // Process with emotional intelligence
                 setTimeout(() => {
-                    const entry = parseActivity(message);
-                    if (entry) {
-                        logActivity(entry);
-                        updateDisplay();
-                        saveData();
+                    const analysis = analyzeEmotionalMessage(message);
+                    const response = generateEmotionalResponse(message, analysis);
+                    
+                    if (analysis.detected) {
+                        emotionalState.stats.totalEntries++;
+                        emotionalState.stats.points += analysis.points;
+                        
+                        if (analysis.mood) {
+                            emotionalState.moods.push(analysis.mood);
+                            updateMoodAverage(analysis.mood.score);
+                        }
+                        
+                        if (analysis.emotion) {
+                            emotionalState.emotions.push(analysis.emotion);
+                        }
+                        
+                        if (analysis.activity) {
+                            emotionalState.activities.push(analysis.activity);
+                        }
                     }
                     
-                    const response = generateResponse(message, entry);
                     addChatMessage(response, 'ai');
-                }, 800 + Math.random() * 400);
+                }, 800);
                 
             } catch (error) {
-                console.warn('Send message error:', error);
-                addChatMessage('Sorry, something went wrong! But I\'m still here to help! 🤖', 'ai');
+                console.warn('Error:', error);
+                addChatMessage('I\'m here to help! Tell me more about how you\'re feeling! 🧠', 'ai');
             }
         }
 
-        function parseActivity(message) {
+        function analyzeEmotionalMessage(message) {
             const msg = message.toLowerCase();
-            let activity = null;
-            let mood = null;
-            let emotionalState = null;
-
-            // ACTIVITY DETECTION
-            if (msg.includes('workout') || msg.includes('exercise') || msg.includes('gym') || msg.includes('run')) {
-                activity = { type: 'workout', category: 'fitness', points: 25 };
-            } else if (msg.includes('read') || msg.includes('book') || msg.includes('study') || msg.includes('learn')) {
-                activity = { type: 'reading', category: 'learning', points: 20 };
-            } else if (msg.includes('meditat') || msg.includes('yoga') || msg.includes('mindful')) {
-                activity = { type: 'meditation', category: 'wellness', points: 15 };
-            } else if (msg.includes('work') || msg.includes('project') || msg.includes('code') || msg.includes('meeting')) {
-                activity = { type: 'work', category: 'productivity', points: 20 };
-            } else if (msg.includes('walk') || msg.includes('bike') || msg.includes('swim')) {
-                activity = { type: 'cardio', category: 'fitness', points: 15 };
-            }
+            let analysis = {
+                detected: false,
+                mood: null,
+                emotion: null,
+                activity: null,
+                points: 0
+            };
 
             // MOOD DETECTION
-            if (msg.includes('great') || msg.includes('amazing') || msg.includes('fantastic') || msg.includes('wonderful')) {
-                mood = { level: 'great', score: 5, category: 'positive' };
-            } else if (msg.includes('good') || msg.includes('nice') || msg.includes('happy') || msg.includes('pleased')) {
-                mood = { level: 'good', score: 4, category: 'positive' };
-            } else if (msg.includes('okay') || msg.includes('fine') || msg.includes('alright') || msg.includes('decent')) {
-                mood = { level: 'okay', score: 3, category: 'neutral' };
+            if (msg.includes('great') || msg.includes('amazing') || msg.includes('fantastic') || msg.includes('wonderful') || msg.includes('excellent')) {
+                analysis.mood = { level: 'great', score: 5, category: 'positive', timestamp: Date.now() };
+                analysis.points += 10;
+                analysis.detected = true;
+            } else if (msg.includes('good') || msg.includes('nice') || msg.includes('happy') || msg.includes('pleased') || msg.includes('fine')) {
+                analysis.mood = { level: 'good', score: 4, category: 'positive', timestamp: Date.now() };
+                analysis.points += 8;
+                analysis.detected = true;
+            } else if (msg.includes('okay') || msg.includes('alright') || msg.includes('decent') || msg.includes('average')) {
+                analysis.mood = { level: 'okay', score: 3, category: 'neutral', timestamp: Date.now() };
+                analysis.points += 5;
+                analysis.detected = true;
             } else if (msg.includes('tired') || msg.includes('exhausted') || msg.includes('drained') || msg.includes('worn out')) {
-                mood = { level: 'tired', score: 2, category: 'low-energy' };
+                analysis.mood = { level: 'tired', score: 2, category: 'low-energy', timestamp: Date.now() };
+                analysis.points += 5;
+                analysis.detected = true;
             } else if (msg.includes('stressed') || msg.includes('anxious') || msg.includes('overwhelmed') || msg.includes('pressure')) {
-                mood = { level: 'stressed', score: 2, category: 'challenging' };
+                analysis.mood = { level: 'stressed', score: 2, category: 'challenging', timestamp: Date.now() };
+                analysis.points += 5;
+                analysis.detected = true;
             } else if (msg.includes('sad') || msg.includes('down') || msg.includes('low') || msg.includes('disappointed')) {
-                mood = { level: 'sad', score: 1, category: 'challenging' };
+                analysis.mood = { level: 'sad', score: 1, category: 'challenging', timestamp: Date.now() };
+                analysis.points += 5;
+                analysis.detected = true;
+            }
+
+            // CONTEXTUAL MOOD DETECTION
+            if (msg.includes('perfect day') || msg.includes('smile') || msg.includes('beautiful day') || msg.includes('perfect start')) {
+                analysis.mood = analysis.mood || { level: 'great', score: 5, category: 'positive', timestamp: Date.now() };
+                analysis.points += analysis.mood ? 0 : 10;
+                analysis.detected = true;
             }
 
             // EMOTIONAL STATE DETECTION
             if (msg.includes('excited') || msg.includes('thrilled') || msg.includes('pumped') || msg.includes('energized')) {
-                emotionalState = { state: 'excited', intensity: 'high', category: 'energetic' };
+                analysis.emotion = { state: 'excited', intensity: 'high', category: 'energetic', timestamp: Date.now() };
+                analysis.points += 15;
+                analysis.detected = true;
             } else if (msg.includes('grateful') || msg.includes('thankful') || msg.includes('blessed') || msg.includes('appreciat')) {
-                emotionalState = { state: 'grateful', intensity: 'warm', category: 'appreciative' };
+                analysis.emotion = { state: 'grateful', intensity: 'warm', category: 'appreciative', timestamp: Date.now() };
+                analysis.points += 15;
+                analysis.detected = true;
             } else if (msg.includes('motivated') || msg.includes('inspired') || msg.includes('driven') || msg.includes('focused')) {
-                emotionalState = { state: 'motivated', intensity: 'strong', category: 'purposeful' };
+                analysis.emotion = { state: 'motivated', intensity: 'strong', category: 'purposeful', timestamp: Date.now() };
+                analysis.points += 15;
+                analysis.detected = true;
             } else if (msg.includes('peaceful') || msg.includes('calm') || msg.includes('serene') || msg.includes('tranquil')) {
-                emotionalState = { state: 'peaceful', intensity: 'gentle', category: 'serene' };
+                analysis.emotion = { state: 'peaceful', intensity: 'gentle', category: 'serene', timestamp: Date.now() };
+                analysis.points += 15;
+                analysis.detected = true;
             } else if (msg.includes('confident') || msg.includes('strong') || msg.includes('powerful') || msg.includes('capable')) {
-                emotionalState = { state: 'confident', intensity: 'solid', category: 'empowered' };
-            } else if (msg.includes('creative') || msg.includes('inspired') || msg.includes('imaginative') || msg.includes('artistic')) {
-                emotionalState = { state: 'creative', intensity: 'flowing', category: 'expressive' };
+                analysis.emotion = { state: 'confident', intensity: 'solid', category: 'empowered', timestamp: Date.now() };
+                analysis.points += 15;
+                analysis.detected = true;
+            } else if (msg.includes('creative') || msg.includes('imaginative') || msg.includes('artistic') || msg.includes('innovative')) {
+                analysis.emotion = { state: 'creative', intensity: 'flowing', category: 'expressive', timestamp: Date.now() };
+                analysis.points += 15;
+                analysis.detected = true;
             }
 
-            // CONTEXTUAL MOOD DETECTION
-            if (msg.includes('perfect start') || msg.includes('great day') || msg.includes('beautiful day')) {
-                mood = mood || { level: 'great', score: 5, category: 'positive' };
-                emotionalState = emotionalState || { state: 'optimistic', intensity: 'bright', category: 'hopeful' };
+            // ACTIVITY DETECTION
+            if (msg.includes('workout') || msg.includes('exercise') || msg.includes('gym') || msg.includes('run')) {
+                analysis.activity = { type: 'workout', category: 'fitness', points: 20, timestamp: Date.now() };
+                analysis.points += 20;
+                analysis.detected = true;
+            } else if (msg.includes('read') || msg.includes('study') || msg.includes('learn') || msg.includes('book')) {
+                analysis.activity = { type: 'reading', category: 'learning', points: 15, timestamp: Date.now() };
+                analysis.points += 15;
+                analysis.detected = true;
+            } else if (msg.includes('meditat') || msg.includes('yoga') || msg.includes('mindful')) {
+                analysis.activity = { type: 'meditation', category: 'wellness', points: 15, timestamp: Date.now() };
+                analysis.points += 15;
+                analysis.detected = true;
             }
 
-            if (msg.includes('feeling') && (msg.includes('great') || msg.includes('good') || msg.includes('amazing'))) {
-                mood = mood || { level: 'great', score: 5, category: 'positive' };
-            }
-
-            // Create comprehensive entry
-            let entry = {
-                timestamp: Date.now(),
-                type: 'mixed',
-                hasActivity: !!activity,
-                hasMood: !!mood,
-                hasEmotion: !!emotionalState
-            };
-
-            if (activity) {
-                entry.activity = activity;
-                entry.activity.timestamp = Date.now();
-                entry.activity.duration = extractDuration(msg) || 30;
-            }
-
-            if (mood) {
-                entry.mood = mood;
-                entry.mood.timestamp = Date.now();
-                entry.mood.context = 'daily_check_in';
-            }
-
-            if (emotionalState) {
-                entry.emotionalState = emotionalState;
-                entry.emotionalState.timestamp = Date.now();
-                entry.emotionalState.trigger = 'self_reflection';
-            }
-
-            return entry.hasActivity || entry.hasMood || entry.hasEmotion ? entry : null;
+            return analysis;
         }
 
-        function extractDuration(message) {
-            const durationMatch = message.match(/(\d+)\s*(minute|min|hour|hr)/i);
-            if (durationMatch) {
-                const value = parseInt(durationMatch[1]);
-                const unit = durationMatch[2].toLowerCase();
-                return unit.startsWith('hour') ? value * 60 : value;
+        function generateEmotionalResponse(message, analysis) {
+            if (!analysis.detected) {
+                const encouragingResponses = [
+                    "I'm here to understand both how you feel and what you do! Tell me about your mood or activities! 🧠",
+                    "Share your emotions with me - I can recognize moods, feelings, and activities! ✨",
+                    "How are you feeling today? I'm designed to understand your emotional world! 💙",
+                    "Tell me about your day - your mood, activities, or how you're feeling! 🌟"
+                ];
+                return encouragingResponses[Math.floor(Math.random() * encouragingResponses.length)];
             }
-            return null;
-        }
 
-        function logActivity(entry) {
-            appState.activities.push(entry);
-            
-            // Track different types of entries
-            if (entry.hasActivity) {
-                appState.stats.totalActivities++;
-                appState.stats.points += entry.activity.points;
-            }
-            
-            if (entry.hasMood) {
-                if (!appState.stats.moodEntries) appState.stats.moodEntries = 0;
-                appState.stats.moodEntries++;
-                
-                // Track mood trends
-                if (!appState.stats.moodAverage) appState.stats.moodAverage = 0;
-                appState.stats.moodAverage = ((appState.stats.moodAverage * (appState.stats.moodEntries - 1)) + entry.mood.score) / appState.stats.moodEntries;
-            }
-            
-            if (entry.hasEmotion) {
-                if (!appState.stats.emotionalEntries) appState.stats.emotionalEntries = 0;
-                appState.stats.emotionalEntries++;
-            }
-            
-            appState.stats.streak = Math.min(appState.stats.streak + 1, 100);
-        }
+            let response = "";
 
-        function generateResponse(message, activity) {
-            if (activity) {
-                const responses = {
-                    fitness: [
-                        "Amazing workout! 💪 Your fitness journey is inspiring!",
-                        "That's dedication! 🔥 Keep that momentum going!",
-                        "Fantastic exercise! 🏃‍♂️ Your body will thank you!"
+            // MOOD RESPONSES
+            if (analysis.mood) {
+                const moodResponses = {
+                    great: [
+                        "Wonderful to hear you're feeling great! ✨",
+                        "That's fantastic energy! 🌟", 
+                        "Your positive vibes are contagious! 😊",
+                        "Amazing to see you thriving! 🚀"
                     ],
-                    learning: [
-                        "Knowledge is power! 📚 Great learning session!",
-                        "Every page makes you smarter! 🧠 Keep it up!",
-                        "Learning builds the future! 📖 Excellent progress!"
+                    good: [
+                        "So glad you're feeling good! 😊",
+                        "That's lovely to hear! 🌸",
+                        "Good vibes all around! ✨",
+                        "Keep that positive momentum! 💫"
                     ],
-                    wellness: [
-                        "Inner peace achieved! 🧘‍♂️ Mindfulness is key!",
-                        "Mental wellness matters! 🌸 Beautiful self-care!",
-                        "Mindful moments create magic! ✨ Well done!"
+                    okay: [
+                        "Thanks for checking in! 🤗",
+                        "Every day has its own rhythm! 🎵",
+                        "Steady as you go! 💪",
+                        "You're doing great by staying aware! 🧠"
                     ],
-                    productivity: [
-                        "Productivity champion! 💼 Getting things done!",
-                        "Great work progress! ⚡ Keep that flow!",
-                        "Making it happen! 🎯 Impressive efficiency!"
+                    tired: [
+                        "Rest is so important! 😴",
+                        "Your body is telling you something wise! 💤",
+                        "Take care of yourself! 🤗",
+                        "Self-care is not selfish! 🔋"
+                    ],
+                    stressed: [
+                        "I hear you - stress is real! 🫂",
+                        "Take a deep breath, you've got this! 💨",
+                        "One step at a time! 👣",
+                        "This feeling will pass! 🌅"
+                    ],
+                    sad: [
+                        "Thank you for sharing how you feel! 🫂",
+                        "Your emotions are valid and important! 💙",
+                        "Sending you gentle support! 🤗",
+                        "Tomorrow can bring new possibilities! 🌈"
                     ]
                 };
+
+                const moodResponseList = moodResponses[analysis.mood.level] || moodResponses.okay;
+                response += moodResponseList[Math.floor(Math.random() * moodResponseList.length)];
+            }
+
+            // EMOTIONAL STATE RESPONSES
+            if (analysis.emotion) {
+                const emotionResponses = {
+                    excited: [" Your excitement is infectious! 🎉", " That energy is amazing! ⚡", " Love your enthusiasm! 🔥"],
+                    grateful: [" Gratitude is such a beautiful practice! 🙏", " Your appreciation lights up the world! ✨", " Thank you for sharing that gratitude! 💝"],
+                    motivated: [" That drive is inspiring! 🎯", " Your motivation is powerful! 💪", " Channel that energy! 🚀"],
+                    peaceful: [" Inner peace is precious! 🧘‍♂️", " That tranquility is beautiful! 🌸", " Serenity suits you! ☮️"],
+                    confident: [" Your confidence shines! ⭐", " That strength is inspiring! 💪", " You radiate capability! 🌟"],
+                    creative: [" Your creative spirit is alive! 🎨", " Imagination flowing! 💫", " Artistic energy detected! 🖼️"]
+                };
+
+                const emotionResponseList = emotionResponses[analysis.emotion.state] || [" Your emotional awareness is wonderful! 💙"];
+                response += emotionResponseList[Math.floor(Math.random() * emotionResponseList.length)];
+            }
+
+            // ACTIVITY RESPONSES
+            if (analysis.activity) {
+                const activityResponses = {
+                    fitness: [" Amazing workout! 💪", " That's dedication! 🔥", " Fantastic exercise! 🏃‍♂️"],
+                    learning: [" Knowledge is power! 📚", " Every page makes you smarter! 🧠", " Learning builds the future! 📖"],
+                    wellness: [" Inner peace achieved! 🧘‍♂️", " Mental wellness matters! 🌸", " Mindful moments create magic! ✨"]
+                };
                 
-                const categoryResponses = responses[activity.category] || responses.fitness;
-                const randomResponse = categoryResponses[Math.floor(Math.random() * categoryResponses.length)];
-                return `${randomResponse} +${activity.points} points earned! 🌟`;
+                const activityResponseList = activityResponses[analysis.activity.category] || activityResponses.fitness;
+                response += activityResponseList[Math.floor(Math.random() * activityResponseList.length)];
+            }
+
+            // FOLLOW-UP QUESTIONS
+            const followUps = [];
+            
+            if (analysis.mood && analysis.mood.level === 'great') {
+                followUps.push("What's making today feel so perfect?", "What's contributing to this amazing energy?");
             }
             
-            const genericResponses = [
-                "Thanks for sharing! 🌟 I love hearing about your journey!",
-                "That sounds interesting! 💫 Tell me more about your activities!",
-                "Great to hear from you! 🎯 Every moment tracked builds a better picture!",
-                "I'm here to help track your progress! 📈 What else have you been up to?"
-            ];
+            if (analysis.emotion && analysis.emotion.state === 'grateful') {
+                followUps.push("What are you most grateful for right now?");
+            }
             
+            if (analysis.emotion && analysis.emotion.state === 'excited') {
+                followUps.push("What has you so excited today?");
+            }
+
+            if (followUps.length > 0 && Math.random() > 0.3) {
+                response += ` ${followUps[Math.floor(Math.random() * followUps.length)]}`;
+            }
+
+            // ADD POINTS
+            if (analysis.points > 0) {
+                response += ` +${analysis.points} points for emotional awareness! 🌟`;
+            }
+
+            return response;
+        }
+
+        function updateMoodAverage(newScore) {
+            const totalMoods = emotionalState.moods.length;
+            emotionalState.stats.moodAverage = ((emotionalState.stats.moodAverage * (totalMoods - 1)) + newScore) / totalMoods;
+            emotionalState.stats.emotionalAwareness = Math.min(emotionalState.stats.totalEntries * 2, 100);
         }
 
         function addChatMessage(message, sender) {
@@ -988,7 +724,7 @@
                 const messageDiv = document.createElement('div');
                 messageDiv.className = `chat-message ${sender}-message`;
                 
-                const emoji = sender === 'ai' ? '🤖' : '👤';
+                const emoji = sender === 'ai' ? '🧠' : '👤';
                 messageDiv.innerHTML = `
                     <div class="message-content">
                         <span class="message-emoji">${emoji}</span>
@@ -998,7 +734,6 @@
                 
                 container.appendChild(messageDiv);
                 
-                // Smooth scroll to bottom
                 setTimeout(() => {
                     container.scrollTo({
                         top: container.scrollHeight,
@@ -1011,106 +746,17 @@
             }
         }
 
-        function updateDisplay() {
-            try {
-                // Update progress rings
-                updateProgressRings();
-                
-                // Update stats display if elements exist
-                const elements = {
-                    totalActivities: document.getElementById('totalActivities'),
-                    totalPoints: document.getElementById('totalPoints'),
-                    currentStreak: document.getElementById('currentStreak')
-                };
-                
-                if (elements.totalActivities) elements.totalActivities.textContent = appState.stats.totalActivities;
-                if (elements.totalPoints) elements.totalPoints.textContent = appState.stats.points;
-                if (elements.currentStreak) elements.currentStreak.textContent = appState.stats.streak;
-                
-            } catch (error) {
-                console.warn('Display update error:', error);
-            }
-        }
-
-        function updateProgressRings() {
-            try {
-                // Calculate percentages
-                const activityPercent = Math.min((appState.stats.totalActivities / 10) * 100, 100);
-                const pointsPercent = Math.min((appState.stats.points / 500) * 100, 100);
-                const goalPercent = Math.min(((appState.stats.totalActivities > 0 ? 1 : 0) / 1) * 100, 100);
-                
-                // Update ring visuals
-                updateRingVisual('goalRing', goalPercent, '#00d4ff');
-                updateRingVisual('activityRing', activityPercent, '#4ecdc4');
-                updateRingVisual('pointsRing', pointsPercent, '#ff6b6b');
-                
-                // Update values
-                const goalValue = document.getElementById('goalValue');
-                const activityValue = document.getElementById('activityValue');
-                const pointsValue = document.getElementById('pointsValue');
-                
-                if (goalValue) goalValue.textContent = appState.stats.totalActivities > 0 ? '100%' : '0%';
-                if (activityValue) activityValue.textContent = appState.stats.totalActivities;
-                if (pointsValue) pointsValue.textContent = appState.stats.points;
-                
-            } catch (error) {
-                console.warn('Progress rings update error:', error);
-            }
-        }
-
-        function updateRingVisual(ringId, percent, color) {
-            try {
-                const ring = document.getElementById(ringId);
-                if (!ring) return;
-
-                const degrees = (percent / 100) * 360;
-                const gradient = `conic-gradient(${color} 0deg, ${color} ${degrees}deg, rgba(255,255,255,0.1) ${degrees}deg)`;
-                ring.style.background = gradient;
-                
-                // Add subtle animation
-                ring.style.transform = `rotate(${degrees * 0.1}deg)`;
-                
-            } catch (error) {
-                console.warn('Ring visual update error:', error);
-            }
-        }
-
-        function saveData() {
-            try {
-                localStorage.setItem('lifestream_state', JSON.stringify(appState));
-                console.log('💾 Data saved to localStorage');
-            } catch (error) {
-                console.warn('Save data error:', error);
-            }
-        }
-
-        function loadSavedData() {
-            try {
-                const savedState = localStorage.getItem('lifestream_state');
-                if (savedState) {
-                    const parsed = JSON.parse(savedState);
-                    appState = { ...appState, ...parsed };
-                    console.log('📁 Loaded saved data');
-                }
-            } catch (error) {
-                console.warn('Load data error:', error);
-            }
-        }
-
         function showStatusMessage(message, type = 'success') {
             try {
-                // Remove existing messages
                 const existing = document.querySelectorAll('.status-message');
                 existing.forEach(msg => msg.remove());
 
-                // Create new message
                 const statusDiv = document.createElement('div');
                 statusDiv.className = `status-message status-${type}`;
                 statusDiv.textContent = message;
                 
                 document.body.appendChild(statusDiv);
                 
-                // Auto remove after 3 seconds
                 setTimeout(() => {
                     if (statusDiv.parentNode) {
                         statusDiv.style.opacity = '0';
@@ -1131,54 +777,36 @@
             return true;
         });
 
-        window.addEventListener('unhandledrejection', function(e) {
-            console.warn('Promise rejection caught:', e.reason);
-            return true;
-        });
-
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🌊 LifeStream Bulletproof Version Loaded');
-            console.log('✅ No loading delays, no script conflicts');
-            console.log('🚀 Ready for production deployment');
+            console.log('🧠 LifeStream Emotional Intelligence v2.0 Loaded');
+            console.log('✅ Advanced mood + emotion + activity detection ready');
         });
 
-        // Test functions for development
-        window.testChat = function() {
+        // Test function
+        window.testEmotionalAI = function() {
             const testMessages = [
-                "I worked out for 45 minutes today!",
-                "Just finished reading for 30 minutes",
-                "Feeling great and excited about today!",
-                "Meditated for 15 minutes this morning - feeling peaceful",
-                "Stressed about work but grateful for my team",
-                "Had an amazing creative session - feeling inspired!"
+                "finally have a smile on my face - what a perfect day",
+                "feeling great and excited about today!",
+                "grateful for this beautiful morning",
+                "had an amazing workout - feeling confident!",
+                "stressed about work but staying motivated",
+                "peaceful meditation session this morning"
             ];
             
             testMessages.forEach((msg, index) => {
                 setTimeout(() => {
                     document.getElementById('chatInput').value = msg;
-                    sendMessage();
+                    sendEmotionalMessage();
                 }, (index + 1) * 3000);
             });
         };
 
-        window.resetApp = function() {
-            localStorage.removeItem('lifestream_state');
-            appState = {
-                currentTab: 'dashboard',
-                activities: [],
-                stats: { totalActivities: 0, points: 0, streak: 0 }
-            };
-            updateDisplay();
-            document.getElementById('chatMessages').innerHTML = `
-                <div class="chat-message ai-message">
-                    <div class="message-content">
-                        <span class="message-emoji">🤖</span>
-                        <span>Welcome to LifeStream! I'm here to help track your activities. Tell me what you've been up to today!</span>
-                    </div>
-                </div>
-            `;
-            showStatusMessage('🔄 App reset successfully!', 'success');
+        window.showStats = function() {
+            console.log('📊 Emotional Intelligence Stats:', emotionalState.stats);
+            console.log('😊 Recent Moods:', emotionalState.moods.slice(-5));
+            console.log('✨ Recent Emotions:', emotionalState.emotions.slice(-5));
+            console.log('💪 Recent Activities:', emotionalState.activities.slice(-5));
         };
     </script>
 </body>
